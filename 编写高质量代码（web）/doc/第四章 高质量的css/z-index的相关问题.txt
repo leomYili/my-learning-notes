@@ -1,0 +1,4 @@
+1.select在ie6下的一个bug，select会浮在绝对定位的元素之上。可以用iframe解决
+  <select></select>
+  <div></div>
+  <iframe id="testMask" frameborder="0" scrolling="no"></iframe>

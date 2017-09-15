@@ -1,0 +1,12 @@
+在修改class和样式时，可能会不小心的清空class和css，所以，需要用到addClass,removaClass
+  <script>
+  var GLOBAL={};
+  GLOBAL.DOM.addClass=function(node,str){
+    if(!new RegExp("(^|\\s+)"+str).test(node.className)){
+      node.className=node.className+""+str;
+    }
+  }
+  GLOBAL.DOM.removeClass=function(node,str){
+    node.className=node.className.replace(new RegExp("(^|\\s+)"+str),"");
+  }
+  </script>

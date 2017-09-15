@@ -1,0 +1,25 @@
+解决零碎小函数，从功能上进行划分，应该分成两大部分--框架部分和应用部分。框架部分提供的是对javaScript代码的组织作用，包括定义变量,定义命名空间方法等，它和具体应用无关，每个页面都需要包括相同的框架，所以框架部分的代码在每个页面都应相同。应用部分提供的是页面功能逻辑，不同页面会有不同功能，不同页面应用部分也不相同，
+function init(){
+  (function(){
+    ''''
+  })()
+  (function(){
+    ''''
+  })()
+}
+如果希望程序无视其出现位置，无视是否在相应的DOM节点之后，我们可以监听window对象的onload事件，当window触发onload事件之后调用脚本。
+window.onload=function(){
+  $("#el").click(function(){
+    '''''
+  });
+}
+再加上前面的init()函数，就是：
+window.onload=init();
+每个js框架的DOMReady不一样，在使用jquery的前提下，
+$(document).ready(init);
+在使用YUI的前提下，
+YAHOO.util.Event.onDOMReady(init);
+如果想在不使用框架的前提下使用DOMReady。
+那就可以在</body>元素之前使用javaScript，这样可以模拟它的效果
+
+可以在调用入口之前，先判断页面内是否定义了init()函数，如果定义了再去执行

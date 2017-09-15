@@ -1,0 +1,84 @@
+例：电话本程序
+  <script>
+    //定义俩电话本
+    var phonebook = [
+      {name:"adang",tel:"111111"},
+      {name:"zhangxia",tel:"2222"}
+    ];
+    var phonebook2 = [
+      {name:"baobao",tel:"111111"}
+    ];
+    //查询电话
+    function getTel(oPhonebook,oName){
+      var tel="";
+      for(var i = 0;i<oPhonebook.length;i++){
+        if(oPhonebook[i].name === oName){
+          tel=oPhonebook[i].tel;
+        }
+      }
+    }
+    //添加纪录
+    function addItem(oPhonebook,oName,oTel){
+      oPhonebook.push({name:oName,tel:oTel});
+    }
+    //删除记录
+    function removeItem(oPhonebook,oName){
+      var n;
+      for(var i=0;i<oPhonebook.length;i++){
+        if(oPhonebook[i].name == oName){
+          n = i;
+          break;
+        }
+      };
+      if(n != underfined){
+        oPhonebook.splice(n,1);
+      }
+    }
+
+    //从电话本1中查询“niaoren”的电话
+    var str=getTel(phonebook,"naoren");
+    alert(str);
+
+    //从电话本1中添加“niaoren”的电话信息
+    addItem(phonebook,"niaoren",12121212);
+
+    //从电话本1中删除"niaoren"的记录
+    removeItem(phonebook,"niaoren");
+  </script>
+这种编程方式将程序分成了“数据”和“处理函数”的两部分，程序以“处理函数”为核心，如果要执行什么操作，就将“数据”传给相应的“处理函数”，返回我们需要返回的结果。这种编程方式就是面向对象编程，。
+面向过程编程存在三种问题，
+（1）数据和处理函数之间没有直接的关联，在执行操作的时候，我们不但要选择相应的处理函数，还要自己准备处理函数需要的数据，也就是说，我们需要同时关注处理函数和数据。
+（2）数据和处理函数都暴露在同一作用域内，没有私有和公有的概念，整个程序中所有的数据和处理函数都可以互相访问，在开发阶段初期或许开发速度很快，但到了后期，由于耦合度很大，就会变得不容易修改。
+（3）面向过程的思维方式是典型的计算机思维方式——输入数据给处理器，处理器内部执行运算，处理器返回结果，但在实际生活中的思维方式，无法在编程中直接使用
+
+面向对象编程
+如果说面向过程的思维就是描述一个个“动作”，而面向对象的思维就是描述一个个“物件”，客观生活中的物件，都可以通过面向对象思维映射到程序中，如果你使用的语言支持面向对象，在程序中我们管“物件”叫做“对象”，对象由两方面组成：“属性”和“行为”，对应客观世界中物件的“状态”和“动作”
+
+例：面向过程方式编程
+var name="adang";
+var state="awake";
+var say=function(oName){
+  alert("I'm "+oName);
+}
+var sleep=function(oState){
+  oState = "sleep";
+}
+say(name);
+sleep(state);
+程序由变量和函数组成，而变量和函数无法联系在一起来共同描述同一个物件，无法很语义化地表达“阿当说”。
+
+例：面向对象的编程方式
+var adang={
+  name : "adang",
+  state : "awake",
+  say : function(){
+    alert("I'm "+this.name);
+  },
+  sleep : function(){
+    this.state = "asleep"
+  }
+}
+首先在程序中映射出笔者这个物件，笔者对应程序中的hash对象adang,name为adang等，有两个行为，然后调用对象里的行为表述事情的发生。
+属性本质是个变量，也就是面向过程中的数据，而行为的本质其实是函数。也就是面向过程中的处理函数。但面向过程并没有将这两者统一为某个物件的归属。而面向对象将数据和处理函数定义到了一个对象的内部，，作为这个对象的属性和行为存在。在对象外部，属性和行为可以用对象的属性和行为来调用，从而让程序有了可以进行描述的能力（按对象进行描述，不是如同面向过程一样，很散）。在对象内部，对象的属性和行为通过this关键字关联起来。
+面向过程编程所有的数据和处理函数都是公有的，整个编程的思维过程就是定义数据，定义处理函数，然后将数据传给处理函数进行处理，处理函数之间也可以互相调用，数据和处理函数紧密耦合。
+面向对象编程的思维过程是定义一个个对象，对象有自己的属性和行为，因为属性和行为都是从属于对象的，于是有“内外之分”。当然，在写函数的时候要考虑好扩展性和耦合度的关系。

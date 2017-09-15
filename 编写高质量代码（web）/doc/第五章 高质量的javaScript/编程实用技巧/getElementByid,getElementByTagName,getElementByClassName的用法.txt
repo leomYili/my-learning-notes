@@ -1,0 +1,7 @@
+原生JavaScript为获得DOM元素提供了三种方法，getElementById、getElementByTagName、getElementByName，因为byname在某些浏览器下解析有问题，加上name一般只对表单元素添加，适用性不强，所以很少使用。
+
+getElementById是通过Id作为挂钩来获得DOM节点的，它的返回值是单个DOM节点，几乎是最常见的获取DOM节点的方法，但因为一个页面内，相同的id只能出现一次，所以它不适合用来获取一组带有“相似功能”的DOM节点。
+
+getElementByTagName是通过标签名作为挂钩来获得DOM节点的，它的返回值是由DOM节点组成的数组。通常情况下，getElementByTagName是结合getElementById来使用的，先由documnet.getElementById来获得某个DOM节点，充当父容器，再用getElementByTagName来获得这个父容器里标签名为···的DOM节点。用标签名来获得DOM节点，让程序和HTML结构耦合太紧。
+
+而getElementByClassName就可以获取一组有相似功能的DOM节点，而且不像tag那样可用的标签名有限，也不会让程序和HTML结构耦合太紧。

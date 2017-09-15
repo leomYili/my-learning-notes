@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="Cache-Control" content="no-cache" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0" />
+    <title>javaScript概述 zepto解析</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <!-- <script src="../doc/zepto 解析/arm.js"></script>
+  <script src="../doc/zepto 解析/arm.touch.js"></script> -->
+    <script src="../doc/zepto 解析/zepto_1122.js"></script>
+    <!-- <script src="../doc/zepto 解析/fastclick.js"></script> -->
+    <style type="text/css">
+    .l-y {
+        height: 80px;
+        width: 80px;
+        background: #000;
+        color: #fff;
+        position: absolute;
+        top: 90px;
+        left: 120px;
+        text-align: center;
+    }
+
+    .z-container {
+        height: 800px;
+    }
+    </style>
+</head>
+
+<body>
+    <section class="container z-container">
+        <div class="jumbotron needsclick" id="btn">
+            <h1>Zepto</h1>
+            <span>1</span>
+            <span>2</span>
+            <input type="text" style="height:50px;" value="">
+            <div class="jumbotron l-y" id="btn2">
+                点击
+            </div>
+        </div>
+    </section>
+    <script>
+    var _xhr = $.ajax({
+        type: "GET",
+        url: "http://210.35.88.208:82/mobile/viewTelBook_qyy.mo",
+        data: {
+            name: "test"
+        },
+        dataType: "jsonp",
+        success: function(xhr) {
+            console.log(xhr);
+        },
+        error:function(context, xhr, type, error){
+          console.log(context,xhr,type,error);
+        },
+    });
+    //_xhr.abort();
+    </script>
+</body>
+
+</html>

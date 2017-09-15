@@ -1,0 +1,14 @@
+http://www.cnblogs.com/cos2004/archive/2011/03/08/1977249.html博客写的很好
+1.在ie table可以用，但不好
+2.改变元素display值，使之成为行内元素
+3.给父元素设置float，然后父元素设置position：relative和left：50%，子元素设置position：relative和left-50%
+4.父元素高度不确定的文本、图片、块级元素的竖直居中是通过给父容器设置相同上下边距实现的。
+5.父元素高度确定的单行文本的竖直居中，是通过给父元素设置line-height来实现的，line-height值和父元素的高度相同
+6.父元素高度确定的多行文本，图片，块级元素的竖直居中（1）表格，再使用vertical-align的值为middle（2）对支持display:table-cell的IE8和其他支持的浏览器用display:table-cell和vertical-align:middle来实现居中。对不支持display:table-cell的ie6、7，就得使用特定的hack
+  <div style="display:table-cell;vertical-align:middle;*position:relative">
+    <div style="*position:absolute;*top:50%">
+      <div style="*position:absolute;*top:-50%">
+        content
+      </div>
+    </div>
+  </div>

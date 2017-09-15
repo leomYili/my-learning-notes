@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta http-equiv="Cache-Control" content="no-cache" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+        <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0" />
+        <title>javaScript概述 jQuery解析sizzle</title>
+        <link rel="stylesheet" href="css/bootstrap.min.css">
+        <link rel="stylesheet" href="css/zepto.css">
+        <script src="../doc/zepto 解析/sizzle.js"></script>
+        <style type="text/css">
+        </style>
+    </head>
+    <body>
+        <section class="container z-container">
+            <div class="jumbotron">
+                <h1>sizzle</h1>
+                <span id="test">1</span>
+                <span>2</span>
+            </div>
+        </section>
+        <script>
+            //var _list = Sizzle("span");
+            //var _item = Sizzle("#test");
+            var _item = Sizzle(".z-container >.jumbotron");
+            //console.debug(Sizzle.matchesSelector(_item,"#test"));
+        </script>
+    </body>
+</html>

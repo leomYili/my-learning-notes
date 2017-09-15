@@ -1,0 +1,37 @@
+common层本身依赖base层提供的接口，所以如果要使用common层的组件，必须先加载base层的代码；common层提供的是更复杂的组件，而不是简单的接口
+例：
+  (1)cookie组件
+  var GLOBAL={};
+  GLOBAL.namspace("Cookie");
+  GLOBAL.Cookie={
+    //读取
+    _read : function(name){
+      var cookieStr=";"+document.cookie+";";
+      var index=cookieStr.indexOf(";"+name+"=");
+      if(index!==-1){
+        var s=cookieStr.substring(index+name.length+3,cookieStr.length);
+        return unescape(s.substring(0,s.indexOf(";")));
+      }else{
+        return null;
+      }
+    },
+    //设置
+    _set : function(name,value,expires){
+      var expDays=expires*24*60*60*1000;
+      var expDate=new Date();
+      expDate.setTime(expDate.getTime()+expDays);
+      var expString=expires ? "; expires="+expDate.toGMTString : "";
+      var pathString=";path=/";
+      document.cookie=name+"="+escape(value)+expString+pathString;
+    },
+    //删除
+    _del : function(name){
+      var exp=new Date(new Date().getTime()-1);
+      var s=this.read(name);
+      if(s!==null){
+        document.cookie=name+"="+s+";expires="+exp.toGMTString()+";path=/";
+      }
+    }
+  }
+除了Cookie、common层常见的组件还有用于异步通信的Ajax、用于拖拽的Drag，用于拖拉元素大小的Resize,用于动画的Animation,用于标签切换的Tab，用于树形目录的tree等；
+common层可以组件分离

@@ -1,0 +1,2 @@
+常见的块级元素有div、p、form、ul、ol、li等，常见的行内元素有span、strong、em等，块级元素独占一行，默认情况下，其宽度自动填满其父元素宽度，行内元素不会独占一行，所以给行内元素设置宽高无效。其宽度随元素的内容变化而变化。块级元素可以设置margin和padding属性。而行内元素的margin和padding属性很奇怪。水平方向的padding-left和padding-right、margin-left、margin-right都产生边距效果，但竖直方向的padding-top、padding-bottom、margin-top、margin-bottom却不会产生边距效果。可通过修改元素的display值来切换块极元素和行内元素，inline和block；而对于inline-block来说想要在ie6、7实现，可以对行内元素触发hasLayout，就可以模拟inline-block属性，也可以使用zoom：1代替。
+position:absolute和float会隐式的改变display类型除display：none之外，其他都会使元素以display:inline-block的方式显示，而position:relative却不会隐式的改变display的类型。

@@ -1,0 +1,8 @@
+1.按模块，各个区分，比如font，比如color，但该方法不实用。只有在复用html模块的时候，比如，header，footer，不变的情况下，可以使用。
+2.base.css+common.css+page.css,按职能划分，这三者不是并列结构，而是层叠结构
+  (1)base层：位于三层最底处，提供CSSreset功能和粒度最小的通用类--原子类，该页面会被各页面所调用，所以要做到不怎么需要维护的地步。
+  (2)common层：为保证重用性和灵活性common层也需要尽可能的使其中组件的构造相对稳定。
+  (3)page层：是页面级别的css，既可以分小的css，按模块一个个建，也可以放在一起，加注释来进行工作，
+3.ie6的双外边距bug，在设置浮动类时，不仅要设置其向左或向右浮动，还要添加display:inline
+4. .clearfix类，用于在父容器直接清除子元素浮动。通常情况下，为了让浮动元素的父容器能够根据浮动元素的高度而自适应其高度。有三种方法：（1）让父元素同时浮动;【bug】（2）让浮动元素后面紧跟一个用于清除浮动的空标签<div> <div class="fl"></div> <div class="cb"></div> </div>;【语义化不好】（3）给父容器挂一个特殊的class，直接从父容器清除浮动元素的浮动，例如<div class="clearfix"><div class="fl"></div></div>【有待尝试】
+5. .zoom类，其设置样式为zoom:1,它是ie中的专有属性，在ie6中使用height:1%来避免haslayout，二而在ie7中这个方法会失效，所以使用zoom:1就没有副作用了。在遇到zoom无效的情况下，可以通过设置"position:relative"来触发hasLayout

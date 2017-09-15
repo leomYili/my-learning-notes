@@ -1,0 +1,10 @@
+{
+  "name": "responsive-nav",
+  "main": [
+    "responsive-nav.css",
+    "responsive-nav.js"
+  ],
+  "ignore": [
+    "demos/"
+  ]
+}

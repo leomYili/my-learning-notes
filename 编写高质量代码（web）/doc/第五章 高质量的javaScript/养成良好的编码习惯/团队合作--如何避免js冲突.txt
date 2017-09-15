@@ -1,0 +1,53 @@
+(function(){})()这种形式是先定义一个匿名的function，然后立刻执行它。包在这个函数里的变量，作用域就不在是window，而是局限在函数内部；——用匿名函数将脚本包起来，可以有效的控制全局变量，避免冲突隐患。
+解决匿名函数之间的通信问题，使用一个全局变量作为各匿名函数的桥接，但不能直接定义变量，而是应该使用一个{}对象类型的变量作为全局变量，这样可以使扩展性十分好。
+var GLOBAL={};
+(function(){
+  var a="123";
+  GLOBAL.str1=a;
+})()
+(function(){
+  var a=GLOBAL.str1;
+})
+只要给全局变量设置一个特定的变量名，作为规范的一部分，让团队中的成员都知道，就ok。
+当然，这么写仍然存在可能冲突的问题，所以，就需要再用到命名空间；
+命名空间是一种特殊的前缀，在javaScript中它其实是通过一个{}对象实现的。在不同的匿名函数中，我们根据功能声明一个不同的命名空间，然后每个匿名函数中GLOBAL对象的属性都不要直接挂在GLOBAL对象上，而是挂在此匿名函数的命名空间下
+var GLOBAL={};
+(function(){
+  var a="123";
+  GLOBAL.A={};
+  GLOBAL.A.str1=a;
+})()
+(function(){
+  GLOBAL.B={};
+  var a=GLOBAL.B.str1;
+})
+这样做只用考虑命名空间的冲突就行了，避免命名空间冲突相对而言比较容易。如果同一个函数比较复杂，那么可以生成多级目录
+var GLOBAL={};
+(function(){
+  GLOBAL.A={};
+  GLOBAL.A.CAT={};
+  GLOBAL.A.DOG={};
+  GLOBAL.A.CAT.name="1212";
+  GLOBAL.A.DOG.move=function(){
+
+  };
+})();
+因为生成命名空间是个非常常用的功能，我们可以进一步将生成命名空间的功能定义成一个函数，方便调用
+var GLOBAL={};
+GLOBAL.namespace=function(str){
+  var arr=str.split("."),o=GLOBAL;
+  for(var i=(arr[0]="GLOBAL") ? 1 : 0;i<arr.length;i++){
+    o[arr[i]]=o[arr[i]] || {};
+    o=o[arr[i]];
+  }
+}
+(function(){
+  var a="123";
+  GLOBAL.namespace("A.CAT");
+  GLOBAL.A.CAT.name=a;
+})()
+(function(){
+  var test=GLOBAL.A.CAT.name;
+  alert(test);
+})();
+让js不产生冲突，需要避免全局变量的泛滥，合理使用命名空间以及为代码添加必要的注释。

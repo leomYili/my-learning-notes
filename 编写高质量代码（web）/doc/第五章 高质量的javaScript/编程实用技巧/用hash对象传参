@@ -1,0 +1,14 @@
+用于解决普通传参中，有些字段如果不想要，但又得给null的情况。
+例，比较普通方式和hash方式传参
+  //普通方式
+  function test(a,b,c){
+    var oa=a || 1,ob=b || 2,oc=c || 3
+  }
+  test(4,5,6);
+  test(null,7,8);
+
+  //hash方式传参
+  function test2(config){
+    var oa = config.a || 1,ob = config.b || 2,oc = config.c || 3
+  }
+普通传参方式，参数如同数组，位置和顺序都非常重要，而用hash对象传参，参数的位置和顺序就不重要了。

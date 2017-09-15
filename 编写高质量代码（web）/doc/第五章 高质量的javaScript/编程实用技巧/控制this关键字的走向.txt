@@ -1,0 +1,33 @@
+例，JavaScript伪协议和内联事件对于this的指向不同
+  //弹出“A”
+  <a href="#" onclick="alert(this.tagName)">11</a>
+  //弹出"underfined"
+  <a href="JavaScript:alert(this.tagName)">11</a>
+  //弹出“true”
+  <a href="JavaScript:alert(this===window)">11</a>
+
+setTimeout和setInterval也会改变this的指向,还有DomNode.onXXX,也会改变this的指向，
+
+使用匿名函数可以解决该问题；setTimeout和setInterval、DomNode.onXXX改变的都是直接调用的函数里的this的指向，其中setTimeout和setInterval将直接调用的函数里的this指向window，DomNode.onXXX将直接调用的函数里的this指向DomNode.使用匿名函数将我们的处理函数封装起来，可以将我们的处理函数由直接调用变为通过匿名函数间接调用。
+还可以通过call和apply函数来改变处理函数的this指向
+
+在this改变指向之前，将它指向的对象保存到一个变量中也是非常常用的方法。
+  <script>
+    var name="somebody";
+    var adang = {
+      name:"adang",
+      say:function(){
+        alert("I'm "+this.name);
+      },
+      init:function(){
+        //this指向adang对象
+        var This=this;
+        document.getElementById("XXX")onclick=function(){
+          //this指向btn的Dom节点，This指向adang对象
+          this.say(); //I'm adang
+          This.say(); //报错，this.say is not a function
+        }
+      }
+    }
+  </script>
+this关键字会改变指向，只要避开这个关键字就可以得到一个稳定的引用

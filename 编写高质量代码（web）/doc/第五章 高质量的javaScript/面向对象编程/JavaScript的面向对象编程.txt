@@ -1,0 +1,412 @@
+1.JavaScript的类定义
+  在JavaScript中，它是没有Class关键字(java)。在JavaScript中充当类的是函数。函数在JavaScript中既可以当作普通函数使用，也可以当作类来使用,在充当类的时候，它本身又肩负着构造函数的责任。
+  例：
+  //函数作为普通函数
+  function sayHi(){
+    alert("hi");
+  }
+
+  //函数作为类
+  function Animal(name){
+    this.name=name;
+    this.type="animal";
+    this.say=function(){
+      alert("I'm a(an)"+this.type+",my name is"+this.name);
+    }
+  }
+  //实例化Animal类
+  var myDog=new Animal("wc");
+  myDog.say();
+
+  函数在作为普通函数使用时，通常直接使用“()”来调用，而作为类使用时，通常可以使用new来实例化。当然，两者并没有语法上的明显分割，在调用sayHi时，你也可以使用new sayHi()来进行调用.只是通常情况下，作为函数时我们更倾向于用动词来命名，而作为类时用名词来命名。书写习惯，类名首字母大写。
+  JavaScript是基于原型的语言，通过new实例化出来的对象，其属性和行为来自于两部分，一部分来自于构造函数，另一部分来自于原型(在定义类的同时所生成的对应的原型，通过*.prototype可以指向这个原型，原型可以通过constructor指向该类/构造函数)。
+  例：
+  function Animal(){
+  }
+
+  var a = Animal.prototype;//a指向Animal类对应的原型
+  var b = a.constructor;//b指向a对应的类的构造函数
+  alert(b === Animal);//true
+  当new Animal()的时候，返回的Animal实例会结合构造函数中定义的属性，行为和原型中定义的属性，行为，构造函数中的属性或行为会覆盖原型中的同名的属性或行为
+  将上述第一个例子改为用原型去重写
+  例:
+  //定义Animal类
+  function Animal(){
+  }
+  //修改Animal类的原型
+  Animal.prototype={
+    name:"xxx",
+    type:"animal",
+    say:function(){
+      alert("I'm a "+this.type+",my name is "+this.name+);
+    }
+  }
+  //实例化Animal类
+  var myDog=new Animal();
+  myDog.say();
+  将属性放在构造参数里，
+  例:
+  //定义Animal类
+  function Animal(name){
+    this.name=name || "xxx";
+    this.type="animal";
+  }
+  //修改Animal原型
+  Animal.prototype={
+    say:function(){
+      alert("I'm a "+this.type+",my name is "+this.name+);
+    }
+  }
+  //实例化Animal类
+  var myDog=new Animal("wangcai");
+  myDog.say();
+  myDog的name和type属性来自构造函数，而say行为来自原型。需要注意的是，this关键字无论出现在构造函数中，还是出现在原型中，指向的都是实例对象，通过this关键字，可以让属性和方法在构造函数和原型间通信。
+2.公有和私有
+  正统的面向对象语言会提供public，protect、private等关键字来声明属性和行为的可访问性是公有还是私有，。但JavaScript并不提供这些关键字，在JavaScript中公有还是私有是通过作用域实现的。
+  例:(JavaScript中的公有和私有)
+  //定义Animal类
+  function Animal(name){
+    //公有属性
+    this.name = name || "xxx";
+    this.type = "animal";
+
+    //私有属性
+    var age=20;
+    var move=function(){
+      alert("I'm moving now");
+    }
+  }
+  //修改Animal类的原型
+  Animal.prototype={
+    //公有方法
+    say:function(){
+      alert("I'm a "+this.type+",my name is "+this.name);
+    }
+  }
+  //实例化Animal类
+  var myDog=new Animal("wangcai");
+  console.log(myDog.name); //wangcai
+  console.log(myDog.age); //underfined
+  myDog.move(); //报错，myDog.move is not function
+
+  用this定义的属性是公有的，而在函数内部用var定义的属性是私有的，通过在Animal构造函数中用var定义变量age，我们给Animal类添加了私有属性age。因为私有属性没有和this挂钩，私有属性的作用域只在类的构造函数里。
+  例:(私有属性的作用域)
+  //定义Animal类
+  function Animal(name){
+    //公有属性
+    this.name = name || "xxx";
+    this.type = "animal";
+
+    //私有属性
+    var age=20;
+    var move=function(){
+      alert("I'm moving now");
+    }
+  }
+  //修改Animal类的原型
+  Animal.prototype={
+    //公有方法
+    say:function(){
+      alert("I'm a "+this.type+",my name is "+this.name+",my age is"+age);
+    },
+    act:function(){
+      move();
+    }
+  }
+  //实例化Animal类
+  var myDog=new Animal("wangcai");
+  myDog.say(); //报错，age未定义
+  myDog.act(); //报错，move is not defined
+
+  想让公有行为访问私有属性和私有行为，最简单当然是将公有行为也写在类的构造函数里，这样属性和行为无论是公有还是私有都共同作用在构造函数的作用域里。这的确是最方便的方法，但不推荐。因为在内存中一个类的原型只有一个，写在原型中的行为，可以被所有实例所共享，实例化的时候，并不会在实例的内存中再复制一份，而写在类里的行为，实例化的时候会在每个实例的内存中再复制一份，而写在类里的行为，实例化的时候会在每个实例里复制一份。把行为写在原型里可以减少内存消耗，没有特殊原因，推荐尽量把行为写在原型里。写在原型中的行为一定是公有的，而且无法访问私有属性，所以如何处理私有属性和私有行为是个难题。
+  一般来说，如果对属性和行为的私有性有非常高的强制性，比如说多人合作，为了确保维护不会出现问题，在开发之初明确好各个类的接口，除了必要的接口设为公有，其他所有接口一律设为私有，以此来降低类之间的耦合程度，确保可维护性，这时我们不得不牺牲内存，将私有行为放在构造函数里，实现真正的私有；
+  如果对属性和行为的私有性要求不高，更常见的做法是约定私有行为，我们还是用this.XXX的方式来定义私有属性，在原型中定义私有行为，但通过给属性和行为的名称前面加上“_”来约定它是私有的，这是一种命名约定，它并不能真正实现行为的私有，但它能让设计师知道它是被设计成私有的，这是一种命名约定，它并不能真正实现行为的私有，但它能够让工程师知道它是被设计成私有的，从而注意避开像公有行为那样使用。
+  例:(使用命名约定来模拟私有属性)
+  //定义Animal类
+  function Animal(name){
+    //公有属性
+    this.name=name || "xxx";
+    this.type="animal";
+    //私有属性
+    this._age=20;
+  }
+  //修改Animal类的原型
+  Animal.prototype={
+    //以_开头为私有方法
+    _move:function(){
+      alert("I'm moving now");
+    },
+
+    //公有方法
+    say:function(){
+      alert("I'm a "+this.type+",my name is "+this.name+",my age is"+this._age);
+    },
+    act:function(){
+      this._move();
+    }
+  }
+  //实例化Animal类
+  var myDog=new Animal("wangcai");
+  myDog.say(); //ok
+  myDog.act(); //ok
+
+  当然，也可以将所有属性都设为私有，然后通过get和set方法来获取和设置属性
+  例:(通过get和set访问属性)
+  function Animal(name){
+    var name;
+    var type="animal";
+    var _age=20;
+    this.getName=function(){
+      return name;
+    }
+    this.setName=function(o){
+      name=o;
+    }
+    this.getType=function(){
+      return type;
+    }
+    this.setType=function(o){
+      type=o;
+    }
+    this._getAge=function(){
+      return _age;
+    }
+    this._setAge=function(o){
+      _age=o
+    }
+    this.setName(name);
+  }
+  Animal.prototype={
+    _move:function(){
+      alert("I'm moving now");
+    },
+    say:function(){
+      alert("I'm a "+this.getType()+",my name is"+this.getName+",I'm "+this._getAge);
+    }
+  }
+  var myDog=new Animal("wangcai");
+  myDog.say();
+  myDog.setType("dog");//通过set设置值
+  alert(myDog.getType());//通过get获取值
+
+  这样做需要将相关的方法都放在构造函数里，和把所有方法都放在原型里相比，这么做会占用更多内存，但它可以更好的保护属性。
+  例:(通过set方法保护属性)
+  function Animal(name){
+    var name;
+    var type="animal";
+    var _age=20;
+    this.getNama=function(){
+      return name;
+    }
+    this.setName=function(o){
+      if(o !=="wangcai" && o !=="xiaoqiang"){
+        alert("您设置的name值不符合要求");
+        return;
+      }
+      name=o;
+    }
+    this.getType=function(){
+      return type;
+    }
+    this.setType=function(o){
+      alert("赋值失败，Animal类的type属性是可读的");
+    }
+    this._getAge=function(){
+      return _age;
+    }
+    this._setAge=function(o){
+      _age=o;
+    }
+    this.setName(name);
+  }
+  Animal.prototype={
+    _move:function(){
+      alert("I'm moving now");
+    },
+    say:function(){
+      alert("I'm a "+this.getType()+",my name is "+this.getName()+",I'm "+this._getAge());
+    },
+    act:function(){
+      this._move();
+    }
+  }
+  var myDag=new Animal("wangcai");
+  myDog.say();
+  myDog.setName("abc"); //您设置的name不符合规则
+  myDog.setName("xiaoqiang"); // ok
+  myDog.setType("111") //这是只读属性，无法赋值
+
+  对于健壮性和扩展性要求很高的应用，来使用set和get方法读写属性更为合适。另外，如果使用set来设置属性，那么我们就有了监听属性valueChange的入口。
+  例:(监听属性的valueChange)
+  function Animal(name){
+    var name=name;
+    var type="animal";
+    var _age=20;
+    var master="adang";
+    this.getMaster=function(){
+      return master;
+    }
+    this.setMaster=function(o){
+      master=o;
+      //触发master属性的valueChange事件
+      this._valueChangeHandler("master");
+    }
+    this.getName=function(){
+      return name;
+    }
+    this.setName=function(o){
+      if(o !=="wangcai" && o !=="xiaoqiang"){
+        alert("您设置的name不符合要求");
+        return;
+      }
+      name=o;
+      //触发name属性的valueChange事件
+      this._valueChangeHandler("name");
+    }
+    this.getType=function(){
+      return type;
+    }
+    this.setType=function(){
+      alert("赋值失败，Animal类的type属性是可读的");
+    }
+    this._getAge=function(){
+      return _age;
+    }
+    this._setAge=function(o){
+      _age=o;
+    }
+    this.setName(name);
+  }
+  Animal.prototype={
+    _move:function(){
+      alert("I'm moving now");
+    },
+    say:function(){
+      alert("I'm a "+this.getType()+",my name is "+this.getName()+" , I'm "+this._getAge());
+    },
+    act:function(){
+      this._move();
+    },
+    //公有行为，用于注册属性的valueChange事件
+    onChange:function(valueName,fun){
+      this["_"+valueName+"ChangeHadlers"]=this["_"+valueName+"ChangeHadlers"] || [];
+      this["_"+valueName+"ChangeHadlers"].push(fun);
+    },
+    _valueChangeHandler:function(valueName){
+      var o=this["_"+valueName+"ChangeHadlers"];
+      if(o){
+        for(var i=0,n=o.length;i<n;i++){
+          var methodName="get"+valueName.charAt(0).toUpperCase()+valueName.slice(1);
+          o[i](this[methodName]());
+        }
+      }
+    }
+  }
+
+  var myDog=new Animal("wangcai");
+  myDog.onChange("name",function(o){
+    //回调函数接收新的value作为参数，可以对其进行匹配
+    if(o === "xiaoqiang"){
+      alert(1);
+    }else{
+      alert(2);
+    }
+  });
+  //给myDog换个名字
+  myDog.setName("xiaoqiang"); //1
+  //给myDog再注册一个name属性的valueChange事件
+  myDog.onChange("name",function(o){
+    alert("my new name is "+o);
+  });
+  //给myDog换个新名字
+  myDog.setName("wangcai"); //2,my new name is wangcai
+  //给myDog注册master属性的valueChange
+  myDog.onChange("master",function(o){
+    alert("my new master is "+o);
+  });
+  myDog.setMaster("Yang"); //my new master is Yang
+
+  编程时监听属性的valueChange事件可以帮我们更接近真实世界的思维习惯
+
+3.继承
+  正统面向对象语言都会提供类似extend之类的方法用于处理类的继承，但JavaScript并不提供extend方法。所以大多数前端js库都自己实现了自己的extend方法。
+  在JavaScript中，实例的属性和行为是由构造函数和原型两部分共同组成，我们定义两个类：Animal和Bird，如果想让Bird继承Animal，那么我们需要把Animal构造函数和原型中的属性和行为全都传给Bird的构造函数和原型。从而得出简单的继承关系
+
+  例:(继承构造函数的属性和行为[1])
+  function Animal(name){
+    this.name=name;
+    this.type="animal";
+  }
+  Animal.prototype={
+    say:function(){
+      alert("I'm a "+this.type+" , my name is "+this.type);
+    }
+  }
+  function Bird(name){
+    Animal(name);
+  }
+  Bird.prototype={
+  }
+
+  //实例化Bird对象
+  var myBird=new Bird("xiaocui");
+  alert(myBird.type); //underfined
+
+  在Bird中直接调用Animal函数的时候，其实是错误方式。在JavaScript中，function有两种不同的用法：1）作为函数存在，直接使用“（）”调用；2）作为类的构造函数存在，使用new调用，“new test（）”；这两种方法的调用，function内部的this的指向会有所不同————作为函数的function，其this指向的是window对象，而作为类构造函数的function，其this指向的是实例对象。如果想达成Animal的内部this指向Bird类的实例，可以通过call或apply方法实现。
+
+  例:(继承构造函数的属性和行为[2])
+  function Animal(name){
+    this.name=name;
+    this.type="animal";
+  }
+  Animal.prototype={
+    say:function(){
+      alert("I'm a "+this.type+" , my name is "+this.type);
+    }
+  }
+  function Bird(name){
+    Animal.call(this,name);
+  }
+  Bird.prototype={
+  }
+
+  //实例化Bird对象
+  var myBird=new Bird("xiaocui");
+  alert(myBird.type); //animal
+
+  而在原型的继承中，如果直接Bird.prototype=Animal.prototype,是可以直接获取say行为，但如果Bird类加入fly行为，Animal也会同样获得fly行为。这涉及传值和传址两个问题，在JavaScript中，赋值语句会用传值和传址两种不同的方式进行赋值，如果是数值型、布尔型、字符型、等基本数据类型在进行赋值时会将数据复制一份，将复制的数据进行赋值，即传值；如果是数组，Hash对象等复杂数据类型，在进行赋值时会直接用内存地址赋值，而不是将数据复制一份，用复制的数据进行赋值，也就是传址。（z1）
+  在原生JavaScript中，选择传值还是传址是根据数据类型自动判定的，但传址有时会给我们带来问题，所以我们需要对复杂类型数据的赋值进行控制，让复杂数据类型去传值而不是传址。最简单的做法是遍历数组或hash对象,将数组或hash对象这种复杂的数据拆分成一个个简单数据，然后分别赋值。（z2）
+  对于数组的传值，我们还可以使用数组类的slice和concat方法实现。（z3）
+  prototype本质上也是个hash对象，所以用它赋值时会进行传址，我们可以使用for in来遍历prototype,从而实现prototype的传值。但因为prototype和function的关系，我们还有另一种方式，new SomeFunction();
+
+  例：(改进原型继承)
+  function Animal(name){
+    this.name=name;
+    this.type="animal";
+  }
+  Animal.prototype={
+    say:function(){
+      alert("I'm a "+this.type+" , my name is "+this.type);
+    }
+  }
+  function Bird(name){
+    Animal.call(this,name);
+  }
+  Bird.prototype=new Animal();
+  Bird.prototype.constructor=Bird;
+  Bird.prototype.fly=function(){
+    alert("I'm flying");
+  }
+
+  //实例化Bird对象
+  var myBird=new Bird("xiaocui");
+  alert(myBird.type); //animal
+  myBird.say();
+  myBird.fly(); //I'm flying
+  var myDog=new Animal("xiaoqiang");
+  myDog.fly(); //underfined
+
+  因为“Bird.prototype=new Animal();”,Bird.prototype.constructor指向了Animal，我们需要将它纠正，重新指回Bird。
+  我们还可以进一步的封装，定义一个extend函数。
+
+
