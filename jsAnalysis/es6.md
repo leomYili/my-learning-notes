@@ -1,6 +1,6 @@
 # 正文
 
-> 对于ECMAScript的第六个版本的学习与总结,该版本提供了之前ECMAScript5中所没有实现的一些十分有必要的功能.例如class,let等之前较为模糊的定义,也在该版进行了汇总,笔记应该会与react阅读笔记相结合.
+> 对于ECMAScript的第六个版本的学习与总结,该版本提供了之前ECMAScript5中所没有实现的一些十分有必要的功能.例如class,let等之前较为模糊的定义,也在该版进行了汇总,本文来源于<a href="http://es6.ruanyifeng.com/">http://es6.ruanyifeng.com/</a>.
 
 # babel的使用
 ![1](img/esSix1.png)
@@ -1119,23 +1119,25 @@ class MyClass {
     return foo instanceof Array;
   }
 }
-```
 [1, 2, 3] instanceof new MyClass() // true
+```
 上面代码中，MyClass是一个类，new MyClass()会返回一个实例。该实例的Symbol.hasInstance方法，会在进行instanceof运算时自动调用，判断左侧的运算子是否为Array的实例。
 
 ### Symbol.isConcatSpreadable
 对象的Symbol.isConcatSpreadable属性等于一个布尔值，表示该对象使用Array.prototype.concat()时，是否可以展开。
+
 ```
 let arr1 = ['c', 'd'];
 ['a', 'b'].concat(arr1, 'e') // ['a', 'b', 'c', 'd', 'e']
 arr1[Symbol.isConcatSpreadable] // undefined
-
 let arr2 = ['c', 'd'];
 arr2[Symbol.isConcatSpreadable] = false;
 ['a', 'b'].concat(arr2, 'e') // ['a', 'b', ['c','d'], 'e']
 ```
+
 上面代码说明，数组的默认行为是可以展开。Symbol.isConcatSpreadable属性等于true或undefined，都有这个效果。
 类似数组的对象也可以展开，但它的Symbol.isConcatSpreadable属性默认为false，必须手动打开。
+
 ```
 let obj = {length: 2, 0: 'c', 1: 'd'};
 ['a', 'b'].concat(obj, 'e') // ['a', 'b', obj, 'e']
@@ -1143,6 +1145,7 @@ let obj = {length: 2, 0: 'c', 1: 'd'};
 obj[Symbol.isConcatSpreadable] = true;
 ['a', 'b'].concat(obj, 'e') // ['a', 'b', 'c', 'd', 'e']
 ```
+
 对于一个类来说，Symbol.isConcatSpreadable属性必须写成实例的属性。不写时,默认为true
 
 ### Symbol.species
@@ -1166,6 +1169,7 @@ class MyMatcher {
 
 ### Symbol.replace
 对象的Symbol.replace属性，指向一个方法，当该对象被String.prototype.replace方法调用时，会返回该方法的返回值。
+
 ```
 String.prototype.replace(searchValue, replaceValue)
 // 等同于
@@ -1174,6 +1178,7 @@ searchValue[Symbol.replace](this, replaceValue)
 
 ### Symbol.search
 对象的Symbol.search属性，指向一个方法，当该对象被String.prototype.search方法调用时，会返回该方法的返回值。
+
 ```
 String.prototype.search(regexp)
 // 等同于
@@ -1192,6 +1197,7 @@ class MySearch {
 
 ### Symbol.split
 对象的Symbol.split属性，指向一个方法，当该对象被String.prototype.split方法调用时，会返回该方法的返回值。
+
 ```
 String.prototype.split(separator, limit)
 // 等同于
@@ -1200,6 +1206,7 @@ separator[Symbol.split](this, limit)
 
 ### Symbol.iterator
 对象的Symbol.iterator属性，指向该对象的默认遍历器方法。
+
 ```
 var myIterable = {};
 myIterable[Symbol.iterator] = function* () {
@@ -1210,6 +1217,7 @@ myIterable[Symbol.iterator] = function* () {
 
 [...myIterable] // [1, 2, 3]
 ```
+
 对象进行for...of循环时，会调用Symbol.iterator方法，返回该对象的默认遍历器
 
 ### Symbol.toPrimitive
@@ -1220,6 +1228,7 @@ Symbol.toPrimitive被调用时，会接受一个字符串参数，表示当前�
 Number：该场合需要转成数值
 String：该场合需要转成字符串
 Default：该场合可以转成数值，也可以转成字符串
+
 ```
 let obj = {
   [Symbol.toPrimitive](hint) {
@@ -1244,6 +1253,7 @@ String(obj) // 'str'
 
 ### Symbol.toStringTag
 对象的Symbol.toStringTag属性，指向一个方法。在该对象上面调用Object.prototype.toString方法时，如果这个属性存在，它的返回值会出现在toString方法返回的字符串之中，表示对象的类型。也就是说，这个属性可以用来定制[object Object]或[object Array]中object后面的那个字符串。
+
 ```
 // 例一
 ({[Symbol.toStringTag]: 'Foo'}.toString())
@@ -1258,6 +1268,7 @@ class Collection {
 var x = new Collection();
 Object.prototype.toString.call(x) // "[object xxx]"
 ```
+
 也就是说之前用来判断类型的函数,在es6中如果修改过了,则得到的结构也不同
 
 ### Symbol.unscopables
@@ -3082,6 +3093,189 @@ function* asyncJob() {
   // ...其他代码
 }
 ```
-上面代码的函数asyncJob是一个协程，它的奥妙就在其中的yield命令。它表示执行到此处，执行权将交给其他协程。也就是说，yield命令是异步两个阶段的分界线。
+上面代码的函数asyncJob是一个协程，它的奥妙就在其中的yield命令。它表示执行到此处，执行权将交给其他协程。也就是说，yield命令是异步两个阶段的分界线.
 
 协程遇到yield命令就暂停，等到执行权返回，再从暂停的地方继续往后执行。它的最大优点，就是代码的写法非常像同步操作，如果去除yield命令，简直一模一样。
+
+整个 Generator 函数就是一个封装的异步任务，或者说是异步任务的容器。异步操作需要暂停的地方，都用yield语句注明。Generator 函数的执行方法如下.
+
+```
+function* gen(x) {
+  var y = yield x + 2;
+  return y;
+}
+
+var g = gen(1);
+g.next() // { value: 3, done: false }
+g.next() // { value: undefined, done: true }
+上面代码中，调用 Generator 函数，会返回一个内部指针（即遍历器）g。这是 Generator 函数不同于普通函数的另一个地方，即执行它不会返回结果，返回的是指针对象。调用指针g的next方法，会移动内部指针（即执行异步任务的第一段），指向第一个遇到的yield语句，上例是执行到x + 2为止。
+```
+
+换言之，next方法的作用是分阶段执行Generator函数。每次调用next方法，会返回一个对象，表示当前阶段的信息（value属性和done属性）。value属性是yield语句后面表达式的值，表示当前阶段的值；done属性是一个布尔值，表示 Generator 函数是否执行完毕，即是否还有下一个阶段。
+
+## Generator 函数的数据交换和错误处理
+Generator 函数可以暂停执行和恢复执行，这是它能封装异步任务的根本原因。除此之外，它还有两个特性，使它可以作为异步编程的完整解决方案：函数体内外的数据交换和错误处理机制。
+
+next返回值的value属性，是 Generator 函数向外输出数据；next方法还可以接受参数，向 Generator 函数体内输入数据。
+
+```
+function* gen(x){
+  var y = yield x + 2;
+  return y;
+}
+
+var g = gen(1);
+g.next() // { value: 3, done: false }
+g.next(2) // { value: 2, done: true }
+```
+
+上面代码中，第一next方法的value属性，返回表达式x + 2的值3。第二个next方法带有参数2，这个参数可以传入 Generator 函数，作为上个阶段异步任务的返回结果，被函数体内的变量y接收。因此，这一步的value属性，返回的就是2（变量y的值）。
+
+Generator 函数内部还可以部署错误处理代码，捕获函数体外抛出的错误。
+```
+function* gen(x){
+  try {
+    var y = yield x + 2;
+  } catch (e){
+    console.log(e);
+  }
+  return y;
+}
+
+var g = gen(1);
+g.next();
+g.throw('出错了');
+// 出错了
+```
+上面代码的最后一行，Generator 函数体外，使用指针对象的throw方法抛出的错误，可以被函数体内的try...catch代码块捕获。这意味着，出错的代码与处理错误的代码，实现了时间和空间上的分离，这对于异步编程无疑是很重要的。
+
+## Thunk 函数
+Thunk 函数是自动执行 Generator 函数的一种方法。
+编译器的“传名调用”实现，往往是将参数放到一个临时函数之中，再将这个临时函数传入函数体。这个临时函数就叫做 Thunk 函数。
+```
+function f(m) {
+  return m * 2;
+}
+
+f(x + 5);
+
+// 等同于
+
+var thunk = function () {
+  return x + 5;
+};
+
+function f(thunk) {
+  return thunk() * 2;
+}
+```
+上面代码中，函数f的参数x + 5被一个函数替换了。凡是用到原参数的地方，对Thunk函数求值即可。
+
+这就是 Thunk 函数的定义，它是“传名调用”的一种实现策略，用来替换某个表达式。
+
+## JavaScript 语言的 Thunk 函数
+JavaScript 语言是传值调用，它的 Thunk 函数含义有所不同。在 JavaScript 语言中，Thunk 函数替换的不是表达式，而是多参数函数，将其替换成一个只接受回调函数作为参数的**单参数函数**。
+
+# async 函数
+ES2017 标准引入了 async 函数，使得异步操作变得更加方便。
+
+async 函数是什么？一句话，它就是 Generator 函数的语法糖。
+
+前文有一个 Generator 函数，依次读取两个文件。
+```
+var fs = require('fs');
+
+var readFile = function (fileName) {
+  return new Promise(function (resolve, reject) {
+    fs.readFile(fileName, function(error, data) {
+      if (error) return reject(error);
+      resolve(data);
+    });
+  });
+};
+
+var gen = function* () {
+  var f1 = yield readFile('/etc/fstab');
+  var f2 = yield readFile('/etc/shells');
+  console.log(f1.toString());
+  console.log(f2.toString());
+};
+```
+写成async函数，就是下面这样。
+```
+var asyncReadFile = async function () {
+  var f1 = await readFile('/etc/fstab');
+  var f2 = await readFile('/etc/shells');
+  console.log(f1.toString());
+  console.log(f2.toString());
+};
+```
+一比较就会发现，async函数就是将 Generator 函数的星号（*）替换成async，将yield替换成await，仅此而已。
+
+async函数对 Generator 函数的改进，体现在以下四点。
+
+（1）内置执行器。
+
+Generator 函数的执行必须靠执行器，所以才有了co模块，而async函数自带执行器。也就是说，async函数的执行，与普通函数一模一样，只要一行。
+```
+asyncReadFile();
+```
+上面的代码调用了asyncReadFile函数，然后它就会自动执行，输出最后结果。这完全不像 Generator 函数，需要调用next方法，或者用co模块，才能真正执行，得到最后结果。
+
+（2）更好的语义。
+
+async和await，比起星号和yield，语义更清楚了。async表示函数里有异步操作，await表示紧跟在后面的表达式需要等待结果。
+
+（3）更广的适用性。
+
+co模块约定，yield命令后面只能是 Thunk 函数或 Promise 对象，而async函数的await命令后面，可以是Promise 对象和原始类型的值（数值、字符串和布尔值，但这时等同于同步操作）。
+
+（4）返回值是 Promise。
+
+async函数的返回值是 Promise 对象，这比 Generator 函数的返回值是 Iterator 对象方便多了。你可以用then方法指定下一步的操作。
+
+进一步说，async函数完全可以看作多个异步操作，包装成的一个 Promise 对象，而await命令就是内部then命令的语法糖。
+
+# Class 的基本语法
+ES6 提供了更接近传统语言的写法，引入了 Class（类）这个概念，作为对象的模板。通过class关键字，可以定义类。
+
+基本上，ES6 的class可以看作只是一个语法糖，它的绝大部分功能，ES5 都可以做到，新的class写法只是让对象原型的写法更加清晰、更像面向对象编程的语法而已。上面的代码用 ES6 的class改写，就是下面这样。
+```
+//定义类
+class Point {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+  }
+
+  toString() {
+    return '(' + this.x + ', ' + this.y + ')';
+  }
+}
+```
+上面代码定义了一个“类”，可以看到里面有一个constructor方法，这就是构造方法，而this关键字则代表实例对象。也就是说，ES5 的构造函数Point，对应 ES6 的Point类的构造方法。
+
+Point类除了构造方法，还定义了一个toString方法。注意，定义“类”的方法的时候，前面不需要加上function这个关键字，直接把函数定义放进去了就可以了。另外，方法之间不需要逗号分隔，加了会报错。
+
+ES6 的类，完全可以看作构造函数的另一种写法。
+```
+class Point {
+  // ...
+}
+
+typeof Point // "function"
+Point === Point.prototype.constructor // true
+```
+上面代码表明，类的数据类型就是函数，类本身就指向构造函数。
+
+使用的时候，也是直接对类使用new命令，跟构造函数的用法完全一致。
+```
+class Bar {
+  doStuff() {
+    console.log('stuff');
+  }
+}
+
+var b = new Bar();
+b.doStuff() // "stuff"
+```
