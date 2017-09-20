@@ -43,21 +43,11 @@
         </div>
     </section>
     <script>
-    var _xhr = $.ajax({
-        type: "GET",
-        url: "http://210.35.88.208:82/mobile/viewTelBook_qyy.mo",
-        data: {
-            name: "test"
-        },
-        dataType: "jsonp",
-        success: function(xhr) {
-            console.log(xhr);
-        },
-        error:function(context, xhr, type, error){
-          console.log(context,xhr,type,error);
-        },
-    });
-    //_xhr.abort();
+        var sum = function sum(){
+            console.log(this);
+        }
+
+        sum();
     </script>
 </body>
 

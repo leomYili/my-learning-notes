@@ -152,3 +152,33 @@ var demo = (function(){
 
 # undefined和void 0
 js里所有的void + 表达式,都会返回undefined,而undefined是可以被当成对象来重写的.所以使用void + 表达式就可以避免这个问题
+
+# 声明提升
+函数声明会提升到最前面开始执行.当然,作为函数表达式,并不会声明提升
+
+而变量的声明提升则更加奇怪,引擎解释javascript代码的之前会对其进行编译。在编译过程中会查找所有声明，并用合适作用域将他们关联起来。换句话说，在代码执行之前，会对作用域链中所有变量和函数声明先处理完.
+总结就是只有声明被提升，而赋值或其他运算会留在原地
+```
+var name = "world";
+(function () {
+if (typeof name == 'undefined') {
+var name = 'yang';
+console.log('Hello ' + name)
+} else {
+console.log('Hello ' + name)
+}
+})()
+```
+而如果在函数的作用域中,则应该为:
+```
+var name = "world";
+(function () {
+var name;
+if (typeof name == 'undefined') {
+var name = 'yang';
+console.log('Hello ' + name)
+} else {
+console.log('Hello ' + name)
+}
+})()
+```
