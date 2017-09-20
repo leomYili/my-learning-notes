@@ -3847,19 +3847,87 @@ class Point {
 
 class ColorPoint extends Point {
 }
+```
 上面代码定义了一个ColorPoint类，该类通过extends关键字，继承了Point类的所有属性和方法。但是由于没有部署任何代码，所以这两个类完全一样，等于复制了一个Point类。下面，我们在ColorPoint内部加上代码。
+
+```
+class Point {
+  constructor(x,y){
+    console.log(x,y);
+  }
+}
 
 class ColorPoint extends Point {
   constructor(x, y, color) {
     super(x, y); // 调用父类的constructor(x, y)
     this.color = color;
+    console.log(color);
   }
 
   toString() {
     return this.color + ' ' + super.toString(); // 调用父类的toString()
   }
 }
+
+var color = new ColorPoint(10,20,'#ccc');
 ```
 上面代码中，constructor方法和toString方法之中，都出现了super关键字，它在这里表示父类的构造函数，用来新建父类的this对象。
 
 子类必须在constructor方法中调用super方法，否则新建实例时会报错。这是因为子类没有自己的this对象，而是继承父类的this对象，然后对其进行加工。如果不调用super方法，子类就得不到this对象。
+```
+class Point { /* ... */ }
+
+class ColorPoint extends Point {
+  constructor() {
+  }
+}
+
+let cp = new ColorPoint(); // ReferenceError
+```
+上面代码中，ColorPoint继承了父类Point，但是它的构造函数没有调用super方法，导致新建实例时报错。
+
+ES5 的继承，实质是先创造子类的实例对象this，然后再将父类的方法添加到this上面（Parent.apply(this)）。ES6 的继承机制完全不同，实质是先创造父类的实例对象this（所以必须先调用super方法），然后再用子类的构造函数修改this。
+
+如果子类没有定义constructor方法，这个方法会被默认添加，代码如下。也就是说，不管有没有显式定义，任何一个子类都有constructor方法。
+```
+class ColorPoint extends Point {
+}
+
+// 等同于
+class ColorPoint extends Point {
+  constructor(...args) {
+    super(...args);
+  }
+}
+
+new cp = new ColorPoint(25,8,"#ccc")
+
+cp instanceof ColorPoint // true
+cp instanceof Point // true
+```
+上面代码中，实例对象cp同时是ColorPoint和Point两个类的实例，这与 ES5 的行为完全一致。
+
+## Object.getPrototypeOf()
+Object.getPrototypeOf方法可以用来从子类上获取父类。
+```
+Object.getPrototypeOf(ColorPoint) === Point
+// true
+```
+因此，可以使用这个方法判断，一个类是否继承了另一个类。
+
+## super 关键字
+super这个关键字，既可以当作函数使用，也可以当作对象使用。在这两种情况下，它的用法完全不同。
+
+第一种情况，super作为函数调用时，代表父类的构造函数。ES6 要求，子类的构造函数必须执行一次super函数。
+
+class A {}
+
+class B extends A {
+  constructor() {
+    super();
+  }
+}
+上面代码中，子类B的构造函数之中的super()，代表调用父类的构造函数。这是必须的，否则 JavaScript 引擎会报错。
+
+注意，super虽然代表了父类A的构造函数，但是返回的是子类B的实例，即super内部的this指的是B，因此super()在这里相当于**A.prototype.constructor.call(this)。**
+
