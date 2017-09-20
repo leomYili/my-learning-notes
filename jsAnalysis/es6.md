@@ -3589,3 +3589,252 @@ printName(); // TypeError: Cannot read property 'print' of undefined
 上面代码中，printName方法中的this，默认指向Logger类的实例。但是，如果将这个方法提取出来单独使用，this会指向该方法运行时所在的环境，因为找不到print方法而导致报错。
 
 一个比较简单的解决方法是，在构造方法中绑定this，这样就不会找不到print方法了。
+```
+class Logger {
+  constructor() {
+    this.printName = this.printName.bind(this);
+  }
+
+  // ...
+}
+另一种解决方法是使用箭头函数。
+
+class Logger {
+  constructor() {
+    this.printName = (name = 'there') => {
+      this.print(`Hello ${name}`);
+    };
+  }
+
+  // ...
+}
+```
+
+## name 属性
+由于本质上，ES6 的类只是 ES5 的构造函数的一层包装，所以函数的许多特性都被Class继承，包括name属性。
+
+class Point {}
+Point.name // "Point"
+name属性总是返回紧跟在class关键字后面的类名。
+
+## Class 的取值函数（getter）和存值函数（setter）
+与 ES5 一样，在“类”的内部可以使用get和set关键字，对某个属性设置存值函数和取值函数，拦截该属性的存取行为。
+
+上面代码中，prop属性有对应的存值函数和取值函数，因此赋值和读取行为都被自定义了。
+
+存值函数和取值函数是设置在属性的 Descriptor 对象上的。
+```
+class CustomHTMLElement {
+  constructor(element) {
+    this.element = element;
+  }
+
+  get html() {
+    return this.element.innerHTML;
+  }
+
+  set html(value) {
+    this.element.innerHTML = value;
+  }
+}
+
+var descriptor = Object.getOwnPropertyDescriptor(
+  CustomHTMLElement.prototype, "html"
+);
+
+"get" in descriptor  // true
+"set" in descriptor  // true
+```
+上面代码中，存值函数和取值函数是定义在html属性的描述对象上面，这与 ES5 完全一致。
+
+## Class 的 Generator 方法
+如果某个方法之前加上星号（*），就表示该方法是一个 Generator 函数。
+```
+class Foo {
+  constructor(...args) {
+    this.args = args;
+  }
+  * [Symbol.iterator]() {
+    for (let arg of this.args) {
+      yield arg;
+    }
+  }
+}
+
+for (let x of new Foo('hello', 'world')) {
+  console.log(x);
+}
+// hello
+// world
+```
+上面代码中，Foo类的Symbol.iterator方法前有一个星号，表示该方法是一个 Generator 函数。Symbol.iterator方法返回一个Foo类的默认遍历器，for...of循环会自动调用这个遍历器。
+
+## Class 的静态方法
+类相当于实例的原型，所有在类中定义的方法，都会被实例继承。如果在一个方法前，加上static关键字，就表示该方法不会被实例继承，而是直接通过类来调用，这就称为“静态方法”。
+
+class Foo {
+  static classMethod() {
+    return 'hello';
+  }
+}
+
+Foo.classMethod() // 'hello'
+
+var foo = new Foo();
+foo.classMethod()
+// TypeError: foo.classMethod is not a function
+上面代码中，Foo类的classMethod方法前有static关键字，表明该方法是一个静态方法，可以直接在Foo类上调用（Foo.classMethod()），而不是在Foo类的实例上调用。如果在实例上调用静态方法，会抛出一个错误，表示不存在该方法。
+
+注意，如果静态方法包含this关键字，这个this指的是类，而不是实例。
+```
+class Foo {
+  static bar () {
+    this.baz();
+  }
+  static baz () {
+    console.log('hello');
+  }
+  baz () {
+    console.log('world');
+  }
+}
+
+Foo.bar() // hello
+```
+上面代码中，静态方法bar调用了this.baz，这里的this指的是Foo类，而不是Foo的实例，等同于调用Foo.baz。另外，从这个例子还可以看出，静态方法可以与非静态方法重名。
+
+父类的静态方法，可以被子类继承。
+```
+class Foo {
+  static classMethod() {
+    return 'hello';
+  }
+}
+
+class Bar extends Foo {
+}
+
+Bar.classMethod() // 'hello'
+```
+上面代码中，父类Foo有一个静态方法，子类Bar可以调用这个方法。
+
+静态方法也是可以从super对象上调用的。
+```
+class Foo {
+  static classMethod() {
+    return 'hello';
+  }
+}
+
+class Bar extends Foo {
+  static classMethod() {
+    return super.classMethod() + ', too';
+  }
+}
+
+Bar.classMethod() // "hello, too"
+```
+
+## Class 的静态属性和实例属性
+静态属性指的是 Class 本身的属性，即Class.propName，而不是定义在实例对象（this）上的属性。
+```
+class Foo {
+}
+
+Foo.prop = 1;
+Foo.prop // 1
+上面的写法为Foo类定义了一个静态属性prop。
+```
+目前，只有这种写法可行，因为 ES6 明确规定，Class 内部只有静态方法，没有静态属性。
+
+```
+// 以下两种写法都无效
+class Foo {
+  // 写法一
+  prop: 2
+
+  // 写法二
+  static prop: 2
+}
+
+Foo.prop // undefined
+```
+
+## new.target属性
+new是从构造函数生成实例的命令。ES6 为new命令引入了一个new.target属性，该属性一般用在构造函数之中，返回new命令作用于的那个构造函数。如果构造函数不是通过new命令调用的，new.target会返回undefined，因此这个属性可以用来确定构造函数是怎么调用的。
+```
+function Person(name) {
+  if (new.target !== undefined) {
+    this.name = name;
+  } else {
+    throw new Error('必须使用new生成实例');
+  }
+}
+
+// 另一种写法
+function Person(name) {
+  if (new.target === Person) {
+    this.name = name;
+  } else {
+    throw new Error('必须使用 new 生成实例');
+  }
+}
+
+var person = new Person('张三'); // 正确
+var notAPerson = Person.call(person, '张三');  // 报错
+```
+上面代码确保构造函数只能通过new命令调用。
+
+Class 内部调用new.target，返回当前 Class。
+```
+class Rectangle {
+  constructor(length, width) {
+    console.log(new.target === Rectangle);
+    this.length = length;
+    this.width = width;
+  }
+}
+
+var obj = new Rectangle(3, 4); // 输出 true
+```
+需要注意的是，子类继承父类时，new.target会返回子类。
+```
+class Rectangle {
+  constructor(length, width) {
+    console.log(new.target === Rectangle);
+    // ...
+  }
+}
+
+class Square extends Rectangle {
+  constructor(length) {
+    super(length, length);
+  }
+}
+
+var obj = new Square(3); // 输出 false
+```
+上面代码中，new.target会返回子类。
+
+利用这个特点，可以写出不能独立使用、必须继承后才能使用的类。
+```
+class Shape {
+  constructor() {
+    if (new.target === Shape) {
+      throw new Error('本类不能实例化');
+    }
+  }
+}
+
+class Rectangle extends Shape {
+  constructor(length, width) {
+    super();
+    // ...
+  }
+}
+var x = new Shape();  // 报错
+var y = new Rectangle(3, 4);  // 正确
+```
+上面代码中，Shape类不能被实例化，只能用于继承。
+
+注意，在函数外部，使用new.target会报错。
