@@ -3279,3 +3279,313 @@ class Bar {
 var b = new Bar();
 b.doStuff() // "stuff"
 ```
+构造函数的prototype属性，在 ES6 的“类”上面继续存在。事实上，类的所有方法都定义在类的prototype属性上面。
+
+```
+class Point {
+  constructor() {
+    // ...
+  }
+
+  toString() {
+    // ...
+  }
+
+  toValue() {
+    // ...
+  }
+}
+
+// 等同于
+
+Point.prototype = {
+  constructor() {},
+  toString() {},
+  toValue() {},
+};
+```
+
+在类的实例上面调用方法，其实就是调用原型上的方法。
+```
+class B {}
+let b = new B();
+
+b.constructor === B.prototype.constructor // true
+```
+上面代码中，b是B类的实例，它的constructor方法就是B类原型的constructor方法。
+
+由于类的方法都定义在prototype对象上面，所以类的新方法可以添加在prototype对象上面。Object.assign方法可以很方便地一次向类添加多个方法。
+```
+class Point {
+  constructor(){
+    // ...
+  }
+}
+
+Object.assign(Point.prototype, {
+  toString(){},
+  toValue(){}
+});
+```
+prototype对象的constructor属性，直接指向“类”的本身，这与 ES5 的行为是一致的。
+```
+Point.prototype.constructor === Point // true
+```
+另外，类的内部所有定义的方法，都是不可枚举的（non-enumerable）。
+
+类的属性名，可以采用表达式。
+```
+let methodName = 'getArea';
+
+class Square {
+  constructor(length) {
+    // ...
+  }
+
+  [methodName]() {
+    // ...
+  }
+}
+```
+上面代码中，Square类的方法名getArea，是从表达式得到的。
+
+## 严格模式
+类和模块的内部，默认就是严格模式，所以不需要使用use strict指定运行模式。只要你的代码写在类或模块之中，就只有严格模式可用。
+
+考虑到未来所有的代码，其实都是运行在模块之中，所以 ES6 实际上把整个语言升级到了严格模式。
+
+## constructor 方法
+constructor方法是类的默认方法，通过new命令生成对象实例时，自动调用该方法。一个类必须有constructor方法，如果没有显式定义，一个空的constructor方法会被默认添加。
+
+上面代码中，定义了一个空的类Point，JavaScript 引擎会自动为它添加一个空的constructor方法。
+
+constructor方法默认返回实例对象（即this），完全可以指定返回另外一个对象。
+```
+class Foo {
+  constructor() {
+    return Object.create(null);
+  }
+}
+
+new Foo() instanceof Foo
+// false
+```
+上面代码中，constructor函数返回一个全新的对象，结果导致实例对象不是Foo类的实例。
+constructor方法默认返回实例对象（即this），完全可以指定返回另外一个对象。
+```
+class Foo {
+  constructor() {
+    return Object.create(null);
+  }
+}
+
+new Foo() instanceof Foo
+// false
+```
+上面代码中，constructor函数返回一个全新的对象，结果导致实例对象不是Foo类的实例。
+
+类必须使用new调用，否则会报错。这是它跟普通构造函数的一个主要区别，后者不用new也可以执行。
+```
+class Foo {
+  constructor() {
+    return Object.create(null);
+  }
+}
+
+Foo()
+// TypeError: Class constructor Foo cannot be invoked without 'new'
+```
+
+## 类的实例对象
+生成类的实例对象的写法，与 ES5 完全一样，也是使用new命令。前面说过，如果忘记加上new，像函数那样调用Class，将会报错。
+```
+class Point {
+  // ...
+}
+
+// 报错
+var point = Point(2, 3);
+
+// 正确
+var point = new Point(2, 3);
+```
+
+与 ES5 一样，实例的属性除非显式定义在其本身（即定义在this对象上），否则都是定义在原型上（即定义在class上）。
+
+与 ES5 一样，类的所有实例共享一个原型对象。
+```
+var p1 = new Point(2,3);
+var p2 = new Point(3,2);
+
+p1.__proto__ === p2.__proto__
+//true
+```
+上面代码中，p1和p2都是Point的实例，它们的原型都是Point.prototype，所以**__proto__**属性是相等的。
+
+这也意味着，可以通过实例的**__proto__**属性为“类”添加方法。
+
+**__proto__** 并不是语言本身的特性，这是各大厂商具体实现时添加的私有属性，虽然目前很多现代浏览器的JS引擎中都提供了这个私有属性，但依旧不建议在生产中使用该属性，避免对环境产生依赖。生产环境中，我们可以使用 Object.getPrototypeOf 方法来获取实例对象的原型，然后再来为原型添加方法/属性。
+
+使用实例的__proto__属性改写原型，必须相当谨慎，不推荐使用，因为这会改变“类”的原始定义，影响到所有实例。
+
+## Class 表达式
+与函数一样，类也可以使用表达式的形式定义。
+```
+const MyClass = class Me {
+  getClassName() {
+    return Me.name;
+  }
+};
+```
+上面代码使用表达式定义了一个类。需要注意的是，这个类的名字是MyClass而不是Me，Me只在 Class 的内部代码可用，指代当前类。
+```
+let inst = new MyClass();
+inst.getClassName() // Me
+Me.name // ReferenceError: Me is not defined
+```
+上面代码表示，Me只在 Class 内部有定义。
+
+如果类的内部没用到的话，可以省略Me，也就是可以写成下面的形式。
+```
+const MyClass = class { /* ... */ };
+```
+
+采用 Class 表达式，可以写出立即执行的 Class。
+```
+let person = new class {
+  constructor(name) {
+    this.name = name;
+  }
+
+  sayName() {
+    console.log(this.name);
+  }
+}('张三');
+
+person.sayName(); // "张三"
+```
+上面代码中，person是一个立即执行的类的实例。
+
+## 不存在变量提升
+类不存在变量提升（hoist），这一点与 ES5 完全不同。
+```
+new Foo(); // ReferenceError
+class Foo {}
+```
+上面代码中，Foo类使用在前，定义在后，这样会报错，因为 ES6 不会把类的声明提升到代码头部。这种规定的原因与下文要提到的继承有关，必须保证子类在父类之后定义。
+```
+{
+  let Foo = class {};
+  class Bar extends Foo {
+  }
+}
+```
+上面的代码不会报错，因为Bar继承Foo的时候，Foo已经有定义了。但是，如果存在class的提升，上面代码就会报错，因为class会被提升到代码头部，而let命令是不提升的，所以导致Bar继承Foo的时候，Foo还没有定义。
+
+## 私有方法
+私有方法是常见需求，但 ES6 不提供，只能通过变通方法模拟实现。
+
+一种做法是在命名上加以区别。
+```
+class Widget {
+
+  // 公有方法
+  foo (baz) {
+    this._bar(baz);
+  }
+
+  // 私有方法
+  _bar(baz) {
+    return this.snaf = baz;
+  }
+
+  // ...
+}
+```
+上面代码中，_bar方法前面的下划线，表示这是一个只限于内部使用的私有方法。但是，这种命名是不保险的，在类的外部，还是可以调用到这个方法。
+
+另一种方法就是索性将私有方法移出模块，因为模块内部的所有方法都是对外可见的。
+```
+class Widget {
+  foo (baz) {
+    bar.call(this, baz);
+  }
+
+  // ...
+}
+
+function bar(baz) {
+  return this.snaf = baz;
+}
+```
+上面代码中，foo是公有方法，内部调用了bar.call(this, baz)。这使得bar实际上成为了当前模块的私有方法。
+
+还有一种方法是利用Symbol值的唯一性，将私有方法的名字命名为一个Symbol值。
+```
+const bar = Symbol('bar');
+const snaf = Symbol('snaf');
+
+export default class myClass{
+
+  // 公有方法
+  foo(baz) {
+    this[bar](baz);
+  }
+
+  // 私有方法
+  [bar](baz) {
+    return this[snaf] = baz;
+  }
+
+  // ...
+};
+```
+上面代码中，bar和snaf都是Symbol值，导致第三方无法获取到它们，因此达到了私有方法和私有属性的效果。
+
+## 私有属性
+与私有方法一样，ES6 不支持私有属性。目前，有一个提案，为class加了私有属性。方法是在属性名之前，使用#表示。
+```
+class Point {
+  #x;
+
+  constructor(x = 0) {
+    #x = +x; // 写成 this.#x 亦可
+  }
+
+  get x() { return #x }
+  set x(value) { #x = +value }
+}
+```
+上面代码中，#x就表示私有属性x，在Point类之外是读取不到这个属性的。还可以看到，私有属性与实例的属性是可以同名的（比如，#x与get x()）。
+
+私有属性可以指定初始值，在构造函数执行时进行初始化。
+```
+class Point {
+  #x = 0;
+  constructor() {
+    #x; // 0
+  }
+}
+```
+之所以要引入一个新的前缀#表示私有属性，而没有采用private关键字，是因为 JavaScript 是一门动态语言，使用独立的符号似乎是唯一的可靠方法，能够准确地区分一种属性是否为私有属性。另外，Ruby 语言使用@表示私有属性，ES6 没有用这个符号而使用#，是因为@已经被留给了 Decorator。
+
+## this 的指向
+类的方法内部如果含有this，它默认指向类的实例。但是，必须非常小心，一旦单独使用该方法，很可能报错。
+```
+class Logger {
+  printName(name = 'there') {
+    this.print(`Hello ${name}`);
+  }
+
+  print(text) {
+    console.log(text);
+  }
+}
+
+const logger = new Logger();
+const { printName } = logger; // 这里使用解构赋值,
+printName(); // TypeError: Cannot read property 'print' of undefined
+```
+上面代码中，printName方法中的this，默认指向Logger类的实例。但是，如果将这个方法提取出来单独使用，this会指向该方法运行时所在的环境，因为找不到print方法而导致报错。
+
+一个比较简单的解决方法是，在构造方法中绑定this，这样就不会找不到print方法了。
