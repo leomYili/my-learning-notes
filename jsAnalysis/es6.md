@@ -3930,4 +3930,1225 @@ class B extends A {
 上面代码中，子类B的构造函数之中的super()，代表调用父类的构造函数。这是必须的，否则 JavaScript 引擎会报错。
 
 注意，super虽然代表了父类A的构造函数，但是返回的是子类B的实例，即super内部的this指的是B，因此super()在这里相当于**A.prototype.constructor.call(this)。**
+```
+class A {
+  constructor() {
+    console.log(new.target.name);
+  }
+}
+class B extends A {
+  constructor() {
+    super();
+  }
+}
+new A() // A
+new B() // B
+```
+上面代码中，new.target指向当前正在执行的函数。可以看到，在super()执行时，它指向的是子类B的构造函数，而不是父类A的构造函数。也就是说，super()内部的this指向的是B。
 
+作为函数时，super()只能用在子类的构造函数之中，用在其他地方就会报错。
+```
+class A {}
+
+class B extends A {
+  m() {
+    super(); // 报错
+  }
+}
+```
+
+第二种情况，super作为对象时，在普通方法中，指向父类的原型对象；在静态方法中，指向父类。
+```
+class A {
+  p() {
+    return 2;
+  }
+}
+
+class B extends A {
+  constructor() {
+    super();
+    console.log(super.p()); // 2
+  }
+}
+
+let b = new B();
+```
+上面代码中，子类B当中的super.p()，就是将super当作一个对象使用。这时，super在普通方法之中，指向A.prototype，所以super.p()就相当于**A.prototype.p()**。
+
+这里需要注意，由于super指向父类的原型对象，所以定义在父类实例上的方法或属性，是无法通过super调用的。
+```
+class A {
+  constructor() {
+    this.p = 2;
+  }
+}
+
+class B extends A {
+  get m() {
+    return super.p;
+  }
+}
+
+let b = new B();
+b.m // undefined
+```
+上面代码中，p是父类A实例的属性，super.p就引用不到它。
+
+如果属性定义在父类的原型对象上，super就可以取到。
+
+如果属性定义在父类的原型对象上，super就可以取到。
+```
+class A {}
+A.prototype.x = 2;
+
+class B extends A {
+  constructor() {
+    super();
+    console.log(super.x) // 2
+  }
+}
+
+let b = new B();
+```
+
+ES6 规定，通过super调用父类的方法时，super会绑定子类的this。
+```
+class A {
+  constructor() {
+    this.x = 1;
+  }
+  print() {
+    console.log(this.x);
+  }
+}
+
+class B extends A {
+  constructor() {
+    super();
+    this.x = 2;
+  }
+  m() {
+    super.print();
+  }
+}
+
+let b = new B();
+b.m() // 2
+```
+上面代码中，super.print()虽然调用的是A.prototype.print()，但是A.prototype.print()会绑定子类B的this，导致输出的是2，而不是1。也就是说，实际上执行的是super.print.call(this)。
+
+由于绑定子类的this，所以如果通过super对某个属性赋值，这时super就是this，赋值的属性会变成子类实例的属性。
+```
+class A {
+  constructor() {
+    this.x = 1;
+  }
+}
+
+class B extends A {
+  constructor() {
+    super();
+    this.x = 2;
+    super.x = 3;
+    console.log(super.x); // undefined
+    console.log(this.x); // 3
+  }
+}
+
+let b = new B();
+```
+上面代码中，super.x赋值为3，这时等同于对this.x赋值为3。而当读取super.x的时候，读的是A.prototype.x，所以返回undefined。
+
+如果super作为对象，用在静态方法之中，这时super将指向父类，而不是父类的原型对象。
+```
+class Parent {
+  static myMethod(msg) {
+    console.log('static', msg);
+  }
+
+  myMethod(msg) {
+    console.log('instance', msg);
+  }
+}
+
+class Child extends Parent {
+  static myMethod(msg) {
+    super.myMethod(msg);
+  }
+
+  myMethod(msg) {
+    super.myMethod(msg);
+  }
+}
+
+Child.myMethod(1); // static 1
+
+var child = new Child();
+child.myMethod(2); // instance 2
+```
+上面代码中，super在静态方法之中指向父类，在普通方法之中指向父类的原型对象。
+
+注意，使用super的时候，必须显式指定是作为函数、还是作为对象使用，否则会报错。
+```
+class A {}
+
+class B extends A {
+  constructor() {
+    super();
+    console.log(super); // 报错
+  }
+}
+```
+最后，由于对象总是继承其他对象的，所以可以在任意一个对象中，使用super关键字。
+```
+var obj = {
+  toString() {
+    return "MyObject: " + super.toString();
+  }
+};
+
+obj.toString(); // MyObject: [object Object]
+```
+
+## 类的 prototype 属性和**__proto__**属性
+大多数浏览器的 ES5 实现之中，每一个对象都有**__proto__**属性，指向对应的构造函数的prototype属性。Class 作为构造函数的语法糖，同时有prototype属性和**__proto__**属性，因此同时存在两条继承链。
+
+（1）子类的**__proto__**属性，表示构造函数的继承，总是指向父类。
+
+（2）子类prototype属性的**__proto__**属性，表示方法的继承，总是指向父类的prototype属性。
+```
+class A {
+}
+
+class B extends A {
+}
+
+B.__proto__ === A // true
+B.prototype.__proto__ === A.prototype // true
+```
+上面代码中，子类B的__proto__属性指向父类A，子类B的prototype属性的__proto__属性指向父类A的prototype属性。
+
+### extends 的继承目标
+extends关键字后面可以跟多种类型的值。
+```
+class B extends A {
+}
+```
+上面代码的A，只要是一个有prototype属性的函数，就能被B继承。由于函数都有prototype属性（除了Function.prototype函数），因此A可以是任意函数。
+
+下面，讨论三种特殊情况。
+
+第一种特殊情况，子类继承Object类。
+```
+class A extends Object {
+}
+
+A.__proto__ === Object // true
+A.prototype.__proto__ === Object.prototype // true
+```
+这种情况下，A其实就是构造函数Object的复制，A的实例就是Object的实例。
+
+第二种特殊情况，不存在任何继承。
+```
+class A {
+}
+
+console.log(A.prototype.__proto__ === Object.prototype) // true
+console.log(A.__proto__ === Function.prototype) // true
+```
+这种情况下，A作为一个基类（即不存在任何继承），就是一个普通函数，所以直接继承Function.prototype。但是，A调用后(声明A)返回一个空对象（即Object实例），所以A.prototype.__proto__指向构造函数（Object）的prototype属性。
+
+第三种特殊情况，子类继承null。
+```
+class A extends null {
+}
+
+A.__proto__ === Function.prototype // true
+A.prototype.__proto__ === undefined // true
+```
+这种情况与第二种情况非常像。A也是一个普通函数，所以直接继承Function.prototype。但是，A调用后返回的对象不继承任何方法，所以它的__proto__指向Function.prototype，即实质上执行了下面的代码。
+```
+class C extends null {
+  constructor() { return Object.create(null); }
+}
+```
+
+### 实例的 __proto__ 属性
+子类实例的__proto__属性的__proto__属性，指向父类实例的__proto__属性。也就是说，子类的原型的原型，是父类的原型。
+
+var p1 = new Point(2, 3);
+var p2 = new ColorPoint(2, 3, 'red');
+
+p2.__proto__ === p1.__proto__ // false
+p2.__proto__.__proto__ === p1.__proto__ // true
+上面代码中，ColorPoint继承了Point，导致前者原型的原型是后者的原型。
+
+因此，通过子类实例的__proto__.__proto__属性，可以修改父类实例的行为。
+
+p2.__proto__.__proto__.printName = function () {
+  console.log('Ha');
+};
+
+p1.printName() // "Ha"
+上面代码在ColorPoint的实例p2上向Point类添加方法，结果影响到了Point的实例p1。
+
+##原生构造函数的继承
+原生构造函数是指语言内置的构造函数，通常用来生成数据结构。ECMAScript 的原生构造函数大致有下面这些。
+
+```
+Boolean()
+Number()
+String()
+Array()
+Date()
+Function()
+RegExp()
+Error()
+Object()
+```
+
+以前，这些原生构造函数是无法继承的.
+
+ES6 允许继承原生构造函数定义子类，因为 ES6 是先新建父类的实例对象this，然后再用子类的构造函数修饰this，使得父类的所有行为都可以继承。下面是一个继承Array的例子。
+```
+class MyArray extends Array {
+  constructor(...args) {
+    super(...args);
+  }
+}
+
+var arr = new MyArray();
+arr[0] = 12;
+arr.length // 1
+
+arr.length = 0;
+arr[0] // undefined
+```
+上面代码定义了一个MyArray类，继承了Array构造函数，因此就可以从MyArray生成数组的实例。这意味着，ES6 可以自定义原生数据结构（比如Array、String等）的子类，这是 ES5 无法做到的。
+上面这个例子也说明，extends关键字不仅可以用来继承类，还可以用来继承原生的构造函数。因此可以在原生数据结构的基础上，定义自己的数据结构。
+
+下面是一个自定义Error子类的例子，可以用来定制报错时的行为。
+```
+class ExtendableError extends Error {
+  constructor(message) {
+    super();
+    this.message = message;
+    this.stack = (new Error()).stack;
+    this.name = this.constructor.name;
+  }
+}
+
+class MyError extends ExtendableError {
+  constructor(m) {
+    super(m);
+  }
+}
+
+var myerror = new MyError('ll');
+myerror.message // "ll"
+myerror instanceof Error // true
+myerror.name // "MyError"
+myerror.stack
+// Error
+//     at MyError.ExtendableError
+//     ...
+```
+
+注意，继承Object的子类，有一个行为差异。
+```
+class NewObj extends Object{
+  constructor(){
+    super(...arguments);
+  }
+}
+var o = new NewObj({attr: true});
+o.attr === true  // false
+```
+
+上面代码中，NewObj继承了Object，但是无法通过super方法向父类Object传参。这是因为 ES6 改变了Object构造函数的行为，一旦发现Object方法不是通过new Object()这种形式调用，ES6 规定Object构造函数会忽略参数。
+
+# Module 的语法
+历史上，JavaScript 一直没有模块（module）体系，无法将一个大程序拆分成互相依赖的小文件，再用简单的方法拼装起来。其他语言都有这项功能，比如 Ruby 的require、Python 的import，甚至就连 CSS 都有@import，但是 JavaScript 任何这方面的支持都没有，这对开发大型的、复杂的项目形成了巨大障碍。
+
+在 ES6 之前，社区制定了一些模块加载方案，最主要的有 CommonJS 和 AMD 两种。前者用于服务器，后者用于浏览器。ES6 在语言标准的层面上，实现了模块功能，而且实现得相当简单，完全可以取代 CommonJS 和 AMD 规范，成为浏览器和服务器通用的模块解决方案。
+
+ES6 模块的设计思想，是尽量的静态化，使得编译时就能确定模块的依赖关系，以及输入和输出的变量。CommonJS 和 AMD 模块，都只能在运行时确定这些东西。比如，CommonJS 模块就是对象，输入时必须查找对象属性。
+```
+// CommonJS模块
+let { stat, exists, readFile } = require('fs');
+
+// 等同于
+let _fs = require('fs');
+let stat = _fs.stat;
+let exists = _fs.exists;
+let readfile = _fs.readfile;
+```
+
+上面代码的实质是整体加载fs模块（即加载fs的所有方法），生成一个对象（_fs），然后再从这个对象上面读取3个方法。这种加载称为“运行时加载”，因为只有运行时才能得到这个对象，导致完全没办法在编译时做“静态优化”。
+
+ES6 模块不是对象，而是通过export命令显式指定输出的代码，再通过import命令输入。
+```
+// ES6模块
+import { stat, exists, readFile } from 'fs';
+```
+上面代码的实质是从fs模块加载3个方法，其他方法不加载。这种加载称为“编译时加载”或者静态加载，即 ES6 可以在编译时就完成模块加载，效率要比 CommonJS 模块的加载方式高。当然，这也导致了没法引用 ES6 模块本身，因为它不是对象。
+
+由于 ES6 模块是编译时加载，使得静态分析成为可能。有了它，就能进一步拓宽 JavaScript 的语法，比如引入宏（macro）和类型检验（type system）这些只能靠静态分析实现的功能。
+
+除了静态加载带来的各种好处，ES6 模块还有以下好处。
+
+* 不再需要UMD模块格式了，将来服务器和浏览器都会支持 ES6 模块格式。目前，通过各种工具库，其实已经做到了这一点。
+* 将来浏览器的新 API 就能用模块格式提供，不再必须做成全局变量或者navigator对象的属性。
+* 不再需要对象作为命名空间（比如Math对象），未来这些功能可以通过模块提供。
+
+## 严格模式
+ES6 的模块自动采用严格模式，不管你有没有在模块头部加上"use strict";。
+
+严格模式主要有以下限制。
+
+* 变量必须声明后再使用
+* 函数的参数不能有同名属性，否则报错
+* 不能使用with语句
+* 不能对只读属性赋值，否则报错
+* 不能使用前缀0表示八进制数，否则报错
+* 不能删除不可删除的属性，否则报错
+* 不能删除变量delete prop，会报错，只能删除属性delete global[prop]
+* eval不会在它的外层作用域引入变量
+* eval和arguments不能被重新赋值
+* arguments不会自动反映函数参数的变化
+* 不能使用arguments.callee
+* 不能使用arguments.caller
+* 禁止this指向全局对象
+* 不能使用fn.caller和fn.arguments获取函数调用的堆栈
+* 增加了保留字（比如protected、static和interface）
+
+其中，尤其需要注意this的限制。ES6 模块之中，顶层的this指向undefined，即不应该在顶层代码使用this。
+
+## export 命令
+模块功能主要由两个命令构成：export和import。export命令用于规定模块的对外接口，import命令用于输入其他模块提供的功能。
+
+一个模块就是一个独立的文件。该文件内部的所有变量，外部无法获取。如果你希望外部能够读取模块内部的某个变量，就必须使用export关键字输出该变量。下面是一个 JS 文件，里面使用export命令输出变量。
+```
+// profile.js
+export var firstName = 'Michael';
+export var lastName = 'Jackson';
+export var year = 1958;
+```
+上面代码是profile.js文件，保存了用户信息。ES6 将其视为一个模块，里面用export命令对外部输出了三个变量。
+
+export的写法，除了像上面这样，还有另外一种。
+```
+// profile.js
+var firstName = 'Michael';
+var lastName = 'Jackson';
+var year = 1958;
+
+export {firstName, lastName, year};
+```
+上面代码在export命令后面，使用大括号指定所要输出的一组变量。它与前一种写法（直接放置在var语句前）是等价的，但是应该优先考虑使用这种写法。因为这样就可以在脚本尾部，一眼看清楚输出了哪些变量。
+
+export命令除了输出变量，还可以输出函数或类（class）。
+```
+export function multiply(x, y) {
+  return x * y;
+};
+```
+上面代码对外输出一个函数multiply。
+
+通常情况下，export输出的变量就是本来的名字，但是可以使用as关键字重命名。
+```
+function v1() { ... }
+function v2() { ... }
+
+export {
+  v1 as streamV1,
+  v2 as streamV2,
+  v2 as streamLatestVersion
+};
+```
+上面代码使用as关键字，重命名了函数v1和v2的对外接口。重命名后，v2可以用不同的名字输出两次。
+
+需要特别注意的是，export命令规定的是对外的接口，必须与模块内部的变量建立一一对应关系。
+
+通常情况下，export输出的变量就是本来的名字，但是可以使用as关键字重命名。
+```
+function v1() { ... }
+function v2() { ... }
+
+export {
+  v1 as streamV1,
+  v2 as streamV2,
+  v2 as streamLatestVersion
+};
+```
+上面代码使用as关键字，重命名了函数v1和v2的对外接口。重命名后，v2可以用不同的名字输出两次。
+
+需要特别注意的是，export命令规定的是对外的接口，必须与模块内部的变量建立一一对应关系。
+
+同样的，function和class的输出，也必须遵守这样的写法。
+```
+// 报错
+function f() {}
+export f;
+
+// 正确
+export function f() {};
+
+// 正确
+function f() {}
+export {f};
+```
+另外，export语句输出的接口，与其对应的值是动态绑定关系，即通过该接口，可以取到模块内部实时的值。
+```
+export var foo = 'bar';
+setTimeout(() => foo = 'baz', 500);
+```
+上面代码输出变量foo，值为bar，500毫秒之后变成baz。
+
+最后，export命令可以出现在模块的任何位置，只要处于模块顶层就可以。如果处于块级作用域内，就会报错，下一节的import命令也是如此。这是因为处于条件代码块之中，就没法做静态优化了，违背了ES6模块的设计初衷。
+```
+function foo() {
+  export default 'bar' // SyntaxError
+}
+foo()
+```
+上面代码中，export语句放在函数之中，结果报错。
+
+最后，export命令可以出现在模块的任何位置，只要处于模块顶层就可以。如果处于块级作用域内，就会报错，下一节的import命令也是如此。这是因为处于条件代码块之中，就没法做静态优化了，违背了ES6模块的设计初衷。
+```
+function foo() {
+  export default 'bar' // SyntaxError
+}
+foo()
+```
+上面代码中，export语句放在函数之中，结果报错。
+
+## import 命令
+使用export命令定义了模块的对外接口以后，其他 JS 文件就可以通过import命令加载这个模块。
+
+// main.js
+import {firstName, lastName, year} from './profile';
+
+function setName(element) {
+  element.textContent = firstName + ' ' + lastName;
+}
+上面代码的import命令，用于加载profile.js文件，并从中输入变量。import命令接受一对大括号，里面指定要从其他模块导入的变量名。大括号里面的变量名，必须与被导入模块（profile.js）对外接口的名称相同。
+
+如果想为输入的变量重新取一个名字，import命令要使用as关键字，将输入的变量重命名。
+```
+import { lastName as surname } from './profile';
+```
+import后面的from指定模块文件的位置，可以是相对路径，也可以是绝对路径，.js后缀可以省略。如果只是模块名，不带有路径，那么必须有配置文件，告诉 JavaScript 引擎该模块的位置。
+```
+import {myMethod} from 'util';
+```
+上面代码中，util是模块文件名，由于不带有路径，必须通过配置，告诉引擎怎么取到这个模块。
+
+注意，import命令具有提升效果，会提升到整个模块的头部，首先执行。
+```
+foo();
+
+import { foo } from 'my_module';
+```
+上面的代码不会报错，因为import的执行早于foo的调用。这种行为的本质是，import命令是编译阶段执行的，在代码运行之前。
+
+由于import是静态执行，所以不能使用表达式和变量，这些只有在运行时才能得到结果的语法结构。
+
+```
+// 报错
+import { 'f' + 'oo' } from 'my_module';
+
+// 报错
+let module = 'my_module';
+import { foo } from module;
+
+// 报错
+if (x === 1) {
+  import { foo } from 'module1';
+} else {
+  import { foo } from 'module2';
+}
+```
+
+上面三种写法都会报错，因为它们用到了表达式、变量和if结构。在静态分析阶段，这些语法都是没法得到值的。
+
+最后，import语句会执行所加载的模块，因此可以有下面的写法。
+```
+import 'lodash';
+```
+
+上面代码仅仅执行lodash模块，但是不输入任何值。
+
+如果多次重复执行同一句import语句，那么只会执行一次，而不会执行多次。
+```
+import 'lodash';
+import 'lodash';
+```
+上面代码加载了两次lodash，但是只会执行一次。
+```
+import { foo } from 'my_module';
+import { bar } from 'my_module';
+
+// 等同于
+import { foo, bar } from 'my_module';
+```
+上面代码中，虽然foo和bar在两个语句中加载，但是它们对应的是同一个my_module实例。也就是说，import语句是 Singleton 模式。
+
+目前阶段，通过 Babel 转码，CommonJS 模块的require命令和 ES6 模块的import命令，可以写在同一个模块里面，但是最好不要这样做。因为import在静态解析阶段执行，所以它是一个模块之中最早执行的。下面的代码可能不会得到预期结果。
+```
+require('core-js/modules/es6.symbol');
+require('core-js/modules/es6.promise');
+import React from 'React';
+```
+
+## 模块的整体加载
+```
+// main.js
+
+import { area, circumference } from './circle';
+
+console.log('圆面积：' + area(4));
+console.log('圆周长：' + circumference(14));
+```
+上面写法是逐一指定要加载的方法，整体加载的写法如下。
+```
+import * as circle from './circle';
+
+console.log('圆面积：' + circle.area(4));
+console.log('圆周长：' + circle.circumference(14));
+```
+注意，模块整体加载所在的那个对象（上例是circle），应该是可以静态分析的，所以不允许运行时改变。下面的写法都是不允许的。
+```
+import * as circle from './circle';
+
+// 下面两行都是不允许的
+circle.foo = 'hello';
+circle.area = function () {};
+```
+
+## export default 命令
+从前面的例子可以看出，使用import命令的时候，用户需要知道所要加载的变量名或函数名，否则无法加载。但是，用户肯定希望快速上手，未必愿意阅读文档，去了解模块有哪些属性和方法。
+
+为了给用户提供方便，让他们不用阅读文档就能加载模块，就要用到export default命令，为模块指定默认输出。
+```
+// export-default.js
+export default function () {
+  console.log('foo');
+}
+```
+上面代码是一个模块文件export-default.js，它的默认输出是一个函数。
+
+其他模块加载该模块时，import命令可以为该匿名函数指定任意名字。
+```
+// import-default.js
+import customName from './export-default';
+customName(); // 'foo'
+```
+上面代码的import命令，可以用任意名称指向export-default.js输出的方法，这时就不需要知道原模块输出的函数名。需要注意的是，这时import命令后面，不使用大括号。
+
+export default命令用在非匿名函数前，也是可以的。
+```
+// export-default.js
+export default function foo() {
+  console.log('foo');
+}
+
+// 或者写成
+
+function foo() {
+  console.log('foo');
+}
+
+export default foo;
+```
+上面代码中，foo函数的函数名foo，在模块外部是无效的。加载的时候，视同匿名函数加载。
+
+下面比较一下默认输出和正常输出。
+```
+// 第一组
+export default function crc32() { // 输出
+  // ...
+}
+
+import crc32 from 'crc32'; // 输入
+
+// 第二组
+export function crc32() { // 输出
+  // ...
+};
+
+import {crc32} from 'crc32'; // 输入
+```
+上面代码的两组写法，第一组是使用export default时，对应的import语句不需要使用大括号；第二组是不使用export default时，对应的import语句需要使用大括号。
+
+export default命令用于指定模块的默认输出。显然，一个模块只能有一个默认输出，因此export default命令只能使用一次。所以，import命令后面才不用加大括号，因为只可能对应一个方法。
+
+本质上，export default就是输出一个叫做default的变量或方法，然后系统允许你为它取任意名字。所以，下面的写法是有效的。
+```
+// modules.js
+function add(x, y) {
+  return x * y;
+}
+export {add as default};
+// 等同于
+// export default add;
+
+// app.js
+import { default as xxx } from 'modules';
+// 等同于
+// import xxx from 'modules';
+```
+
+正是因为export default命令其实只是输出一个叫做default的变量，所以它后面不能跟变量声明语句。
+```
+// 正确
+export var a = 1;
+
+// 正确
+var a = 1;
+export default a;
+
+// 错误
+export default var a = 1;
+```
+
+同样地，因为export default本质是将该命令后面的值，赋给default变量以后再默认，所以直接将一个值写在export default之后。
+```
+// 正确
+export default 42;
+
+// 报错
+export 42;
+```
+
+有了export default命令，输入模块时就非常直观了，以输入 lodash 模块为例。
+```
+import _ from 'lodash';
+```
+如果想在一条import语句中，同时输入默认方法和其他接口，可以写成下面这样。
+```
+import _, { each, each as forEach } from 'lodash';
+```
+
+对应上面代码的export语句如下。
+```
+export default function (obj) {
+  // ···
+}
+
+export function each(obj, iterator, context) {
+  // ···
+}
+
+export { each as forEach };
+```
+上面代码的最后一行的意思是，暴露出forEach接口，默认指向each接口，即forEach和each指向同一个方法。
+
+export default也可以用来输出类。
+```
+// MyClass.js
+export default class { ... }
+
+// main.js
+import MyClass from 'MyClass';
+let o = new MyClass();
+```
+
+## export 与 import 的复合写法
+如果在一个模块之中，先输入后输出同一个模块，import语句可以与export语句写在一起。
+```
+export { foo, bar } from 'my_module';
+
+// 等同于
+import { foo, bar } from 'my_module';
+export { foo, bar };
+```
+上面代码中，export和import语句可以结合在一起，写成一行。
+
+模块的接口改名和整体输出，也可以采用这种写法。
+```
+// 接口改名
+export { foo as myFoo } from 'my_module';
+
+// 整体输出
+export * from 'my_module';
+默认接口的写法如下。
+
+export { default } from 'foo';
+```
+具名接口改为默认接口的写法如下。
+```
+export { es6 as default } from './someModule';
+
+// 等同于
+import { es6 } from './someModule';
+export default es6;
+```
+同样地，默认接口也可以改名为具名接口。
+
+```
+export { default as es6 } from './someModule';
+```
+
+## 模块的继承
+模块之间也可以继承。
+
+假设有一个circleplus模块，继承了circle模块。
+```
+// circleplus.js
+
+export * from 'circle';
+export var e = 2.71828182846;
+export default function(x) {
+  return Math.exp(x);
+}
+```
+上面代码中的export *，表示再输出circle模块的所有属性和方法。注意，export *命令会忽略circle模块的default方法。然后，上面代码又输出了自定义的e变量和默认方法。
+
+这时，也可以将circle的属性或方法，改名后再输出。
+```
+// circleplus.js
+
+export { area as circleArea } from 'circle';
+```
+上面代码表示，只输出circle模块的area方法，且将其改名为circleArea。
+
+加载上面模块的写法如下。
+```
+// main.js
+
+import * as math from 'circleplus';
+import exp from 'circleplus';
+console.log(exp(math.e));
+```
+上面代码中的import exp表示，将circleplus模块的默认方法加载为exp方法。
+
+## 跨模块常量
+本书介绍const命令的时候说过，const声明的常量只在当前代码块有效。如果想设置跨模块的常量（即跨多个文件），或者说一个值要被多个模块共享，可以采用下面的写法。
+```
+// constants.js 模块
+export const A = 1;
+export const B = 3;
+export const C = 4;
+
+// test1.js 模块
+import * as constants from './constants';
+console.log(constants.A); // 1
+console.log(constants.B); // 3
+
+// test2.js 模块
+import {A, B} from './constants';
+console.log(A); // 1
+console.log(B); // 3
+```
+如果要使用的常量非常多，可以建一个专门的constants目录，将各种常量写在不同的文件里面，保存在该目录下。
+```
+// constants/db.js
+export const db = {
+  url: 'http://my.couchdbserver.local:5984',
+  admin_username: 'admin',
+  admin_password: 'admin password'
+};
+
+// constants/user.js
+export const users = ['root', 'admin', 'staff', 'ceo', 'chief', 'moderator'];
+```
+然后，将这些文件输出的常量，合并在index.js里面。
+```
+// constants/index.js
+export {db} from './db';
+export {users} from './users';
+```
+使用的时候，直接加载index.js就可以了。
+```
+// script.js
+import {db, users} from './index';
+```
+
+# Module 的加载实现
+
+## 浏览器加载
+
+### 传统方法
+在 HTML 网页中，浏览器通过**script**标签加载 JavaScript 脚本。
+```
+<!-- 页面内嵌的脚本 -->
+<script type="application/javascript">
+  // module code
+</script>
+
+<!-- 外部脚本 -->
+<script type="application/javascript" src="path/to/myModule.js">
+</script>
+```
+上面代码中，由于浏览器脚本的默认语言是 JavaScript，因此type="application/javascript"可以省略。
+
+默认情况下，浏览器是同步加载 JavaScript 脚本，即渲染引擎遇到**script**标签就会停下来，等到执行完脚本，再继续向下渲染。如果是外部脚本，还必须加入脚本下载的时间。
+
+如果脚本体积很大，下载和执行的时间就会很长，因此造成浏览器堵塞，用户会感觉到浏览器“卡死”了，没有任何响应。这显然是很不好的体验，所以浏览器允许脚本异步加载，下面就是两种异步加载的语法。
+```
+<script src="path/to/myModule.js" defer></script>
+<script src="path/to/myModule.js" async></script>
+```
+上面代码中，**script**标签打开defer或async属性，脚本就会异步加载。渲染引擎遇到这一行命令，就会开始下载外部脚本，但不会等它下载和执行，而是直接执行后面的命令。
+
+defer与async的区别是：前者要等到整个页面正常渲染结束，才会执行；后者一旦下载完，渲染引擎就会中断渲染，执行这个脚本以后，再继续渲染。一句话，defer是“渲染完再执行”，async是“下载完就执行”。另外，如果有多个defer脚本，会按照它们在页面出现的顺序加载，而多个async脚本是不能保证加载顺序的。
+
+### 加载规则
+浏览器加载 ES6 模块，也使用**script**标签，但是要加入type="module"属性。
+```
+<script type="module" src="foo.js"></script>
+```
+上面代码在网页中插入一个模块foo.js，由于type属性设为module，所以浏览器知道这是一个 ES6 模块。
+
+浏览器对于带有type="module"的**script**，都是异步加载，不会造成堵塞浏览器，即等到整个页面渲染完，再执行模块脚本，等同于打开了**script**标签的defer属性。
+```
+<script type="module" src="foo.js"></script>
+<!-- 等同于 -->
+<script type="module" src="foo.js" defer></script>
+```
+
+**script**标签的async属性也可以打开，这时只要加载完成，渲染引擎就会中断渲染立即执行。执行完成后，再恢复渲染。
+```
+<script type="module" src="foo.js" async></script>
+```
+
+ES6 模块也允许内嵌在网页中，语法行为与加载外部脚本完全一致。
+```
+<script type="module">
+  import utils from "./utils.js";
+
+  // other code
+</script>
+```
+对于外部的模块脚本（上例是foo.js），有几点需要注意。
+
+* 代码是在模块作用域之中运行，而不是在全局作用域运行。模块内部的顶层变量，外部不可见。
+* 模块脚本自动采用严格模式，不管有没有声明use strict。
+* 模块之中，可以使用import命令加载其他模块（.js后缀不可省略，需要提供绝对 URL 或相对 URL），也可以使用export命令输出对外接口。
+* 模块之中，顶层的this关键字返回undefined，而不是指向window。也就是说，在模块顶层使用this关键字，是无意义的。
+* 同一个模块如果加载多次，将只执行一次。
+
+## ES6 模块与 CommonJS 模块的差异
+讨论 Node 加载 ES6 模块之前，必须了解 ES6 模块与 CommonJS 模块完全不同。
+
+它们有两个重大差异。
+
+CommonJS 模块输出的是一个值的拷贝，ES6 模块输出的是值的引用。
+CommonJS 模块是运行时加载，ES6 模块是编译时输出接口。
+第二个差异是因为 CommonJS 加载的是一个对象（即module.exports属性），该对象只有在脚本运行完才会生成。而 ES6 模块不是对象，它的对外接口只是一种静态定义，在代码静态解析阶段就会生成。
+
+# 编程风格
+
+## 块级作用域
+（1）let 取代 var
+
+ES6提出了两个新的声明变量的命令：let和const。其中，let完全可以取代var，因为两者语义相同，而且let没有副作用。
+```
+'use strict';
+
+if (true) {
+  let x = 'hello';
+}
+
+for (let i = 0; i < 10; i++) {
+  console.log(i);
+}
+```
+上面代码如果用var替代let，实际上就声明了两个全局变量，这显然不是本意。变量应该只在其声明的代码块内有效，var命令做不到这一点。
+
+var命令存在变量提升效用，let命令没有这个问题。
+```
+'use strict';
+
+if(true) {
+  console.log(x); // ReferenceError
+  let x = 'hello';
+}
+```
+上面代码如果使用var替代let，console.log那一行就不会报错，而是会输出undefined，因为变量声明提升到代码块的头部。这违反了变量先声明后使用的原则。
+
+所以，建议不再使用var命令，而是使用let命令取代。
+
+（2）全局常量和线程安全
+
+在let和const之间，建议优先使用const，尤其是在全局环境，不应该设置变量，只应设置常量。
+
+const优于let有几个原因。一个是const可以提醒阅读程序的人，这个变量不应该改变；另一个是const比较符合函数式编程思想，运算不改变值，只是新建值，而且这样也有利于将来的分布式运算；最后一个原因是 JavaScript 编译器会对const进行优化，所以多使用const，有利于提供程序的运行效率，也就是说let和const的本质区别，其实是编译器内部的处理不同。
+```
+// bad
+var a = 1, b = 2, c = 3;
+
+// good
+const a = 1;
+const b = 2;
+const c = 3;
+
+// best
+const [a, b, c] = [1, 2, 3];
+```
+const声明常量还有两个好处，一是阅读代码的人立刻会意识到不应该修改这个值，二是防止了无意间修改变量值所导致的错误。
+
+所有的函数都应该设置为常量。
+
+长远来看，JavaScript可能会有多线程的实现（比如Intel的River Trail那一类的项目），这时let表示的变量，只应出现在单线程运行的代码中，不能是多线程共享的，这样有利于保证线程安全。
+
+## 字符串
+静态字符串一律使用单引号或反引号，不使用双引号。动态字符串使用反引号。
+```
+// bad
+const a = "foobar";
+const b = 'foo' + a + 'bar';
+
+// acceptable
+const c = `foobar`;
+
+// good
+const a = 'foobar';
+const b = `foo${a}bar`;
+const c = 'foobar';
+```
+
+## 解构赋值
+使用数组成员对变量赋值时，优先使用解构赋值。
+```
+const arr = [1, 2, 3, 4];
+
+// bad
+const first = arr[0];
+const second = arr[1];
+
+// good
+const [first, second] = arr;
+```
+函数的参数如果是对象的成员，优先使用解构赋值。
+```
+// bad
+function getFullName(user) {
+  const firstName = user.firstName;
+  const lastName = user.lastName;
+}
+
+// good
+function getFullName(obj) {
+  const { firstName, lastName } = obj;
+}
+
+// best
+function getFullName({ firstName, lastName }) {
+}
+```
+如果函数返回多个值，优先使用对象的解构赋值，而不是数组的解构赋值。这样便于以后添加返回值，以及更改返回值的顺序。
+```
+// bad
+function processInput(input) {
+  return [left, right, top, bottom];
+}
+
+// good
+function processInput(input) {
+  return { left, right, top, bottom };
+}
+
+const { left, right } = processInput(input);
+```
+
+## 对象
+单行定义的对象，最后一个成员不以逗号结尾。多行定义的对象，最后一个成员以逗号结尾。
+```
+// bad
+const a = { k1: v1, k2: v2, };
+const b = {
+  k1: v1,
+  k2: v2
+};
+
+// good
+const a = { k1: v1, k2: v2 };
+const b = {
+  k1: v1,
+  k2: v2,
+};
+```
+对象尽量静态化，一旦定义，就不得随意添加新的属性。如果添加属性不可避免，要使用Object.assign方法。
+```
+// bad
+const a = {};
+a.x = 3;
+
+// if reshape unavoidable
+const a = {};
+Object.assign(a, { x: 3 });
+
+// good
+const a = { x: null };
+a.x = 3;
+```
+
+如果对象的属性名是动态的，可以在创造对象的时候，使用属性表达式定义。
+```
+// bad
+const obj = {
+  id: 5,
+  name: 'San Francisco',
+};
+obj[getKey('enabled')] = true;
+
+// good
+const obj = {
+  id: 5,
+  name: 'San Francisco',
+  [getKey('enabled')]: true,
+};
+```
+上面代码中，对象obj的最后一个属性名，需要计算得到。这时最好采用属性表达式，在新建obj的时候，将该属性与其他属性定义在一起。这样一来，所有属性就在一个地方定义了。
+
+## 数组
+使用扩展运算符（...）拷贝数组。
+```
+// bad
+const len = items.length;
+const itemsCopy = [];
+let i;
+
+for (i = 0; i < len; i++) {
+  itemsCopy[i] = items[i];
+}
+
+// good
+const itemsCopy = [...items];
+```
+使用Array.from方法，将类似数组的对象转为数组。
+```
+const foo = document.querySelectorAll('.foo');
+const nodes = Array.from(foo);
+```
+
+## 函数
+立即执行函数可以写成箭头函数的形式。
+```
+(() => {
+  console.log('Welcome to the Internet.');
+})();
+```
+那些需要使用函数表达式的场合，尽量用箭头函数代替。因为这样更简洁，而且绑定了this。
+
+```
+// bad
+[1, 2, 3].map(function (x) {
+  return x * x;
+});
+
+// good
+[1, 2, 3].map((x) => {
+  return x * x;
+});
+
+// best
+[1, 2, 3].map(x => x * x);
+```
+
+箭头函数取代Function.prototype.bind，不应再用self/_this/that绑定 this。
+```
+// bad
+const self = this;
+const boundMethod = function(...params) {
+  return method.apply(self, params);
+}
+
+// acceptable
+const boundMethod = method.bind(this);
+
+// best
+const boundMethod = (...params) => method.apply(this, params);
+```
+
+不要在函数体内使用arguments变量，使用rest运算符（...）代替。因为rest运算符显式表明你想要获取参数，而且arguments是一个类似数组的对象，而rest运算符可以提供一个真正的数组。
+```
+// bad
+function concatenateAll() {
+  const args = Array.prototype.slice.call(arguments);
+  return args.join('');
+}
+
+// good
+function concatenateAll(...args) {
+  return args.join('');
+}
+```
+使用默认值语法设置函数参数的默认值。
+```
+// bad
+function handleThings(opts) {
+  opts = opts || {};
+}
+
+// good
+function handleThings(opts = {}) {
+  // ...
+}
+```
+
+## Map结构
+注意区分Object和Map，只有模拟现实世界的实体对象时，才使用Object。如果只是需要key: value的数据结构，使用Map结构。因为Map有内建的遍历机制。
+```
+let map = new Map(arr);
+
+for (let key of map.keys()) {
+  console.log(key);
+}
+
+for (let value of map.values()) {
+  console.log(value);
+}
+
+for (let item of map.entries()) {
+  console.log(item[0], item[1]);
+}
+```
+
+## Class
+总是用Class，取代需要prototype的操作。因为Class的写法更简洁，更易于理解。
+```
+// bad
+function Queue(contents = []) {
+  this._queue = [...contents];
+}
+Queue.prototype.pop = function() {
+  const value = this._queue[0];
+  this._queue.splice(0, 1);
+  return value;
+}
+
+// good
+class Queue {
+  constructor(contents = []) {
+    this._queue = [...contents];
+  }
+  pop() {
+    const value = this._queue[0];
+    this._queue.splice(0, 1);
+    return value;
+  }
+}
+```
+使用extends实现继承，因为这样更简单，不会有破坏instanceof运算的危险。
+```
+// bad
+const inherits = require('inherits');
+function PeekableQueue(contents) {
+  Queue.apply(this, contents);
+}
+inherits(PeekableQueue, Queue);
+PeekableQueue.prototype.peek = function() {
+  return this._queue[0];
+}
+
+// good
+class PeekableQueue extends Queue {
+  peek() {
+    return this._queue[0];
+  }
+}
+```
