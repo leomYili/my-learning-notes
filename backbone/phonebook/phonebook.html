@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Cache-Control" content="no-cache" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"
+  />
+  <title>backbone-phonebook</title>
+  <style type="text/css">
+    #app {
+      background: #f0f0f0;
+      margin: 0 auto;
+      padding: 20px;
+      width: 500px;
+    }
+
+    #app header>h1 {
+      font-size: 36px;
+      font-weight: bold;
+      text-align: center;
+      padding: 0 0 10px 0;
+    }
+
+    #app input[type="text"] {
+      width: 100%;
+      font-size: 24px;
+      font-family: inherit;
+      line-height: 1.4em;
+      border: 0;
+      outline: none;
+      ;
+      border: 1px solid #999999
+    }
+
+    #app input[type="button"] {
+      width: 100%;
+      border-radius: 0;
+      border: 0;
+      background: #000;
+      line-height: 30px;
+      color: #fff;
+      padding: 0;
+      margin: 0;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app">
+    <header>
+      <h1>通讯录</h1>
+      <label>
+        姓名:<input id="name" type="text" placeholder="请输入联系人电话">
+      </label>
+      <label>
+        电话:<input id="tell" type="text" placeholder="请输入联系人电话">
+      </label>
+      <input type="button" id="save" value="保存">
+    </header>
+    <section id="main">
+      <ul id="phonebook-list"></ul>
+    </section>
+  </div>
+  <script src="../lib/underscore.js"></script>
+  <script src="../lib/jquery.js"></script>
+  <script src="../lib/backbone.js"></script>
+  <script src="../lib/backbone.localStorage.js"></script>
+  <script src="phonebook.js"></script>
+  <!-- Templates -->
+</body>
+
+</html>
