@@ -624,10 +624,10 @@ function ajax(options){
     xhr.onreadystatechange=function(e){
         if(xhr.readystate === 4){
             if(xhr.status >= 200 && xhr.status < 300) || xhr.status == 304){
-            success.call(this,e.response);
-        }else{
-            error.call(this,e.response);
-        }
+                success.call(this,e.response);
+            }else{
+                error.call(this,e.response);
+            }
         }
     };
 }
