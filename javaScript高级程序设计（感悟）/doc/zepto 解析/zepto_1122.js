@@ -2026,6 +2026,7 @@ window.$ === undefined && (window.$ = Zepto);
         };
 
     /**
+     * 对字符串类型的事件类型进行封装,转变为一个合成事件
      * [compatible description]
      * @param  {[type]} event  [副本值]
      * @param  {[type]} source [初始值]

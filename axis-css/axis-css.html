@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>axis-css.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: "Segoe WPC", "Segoe UI", "SFUIText-Light", "HelveticaNeue-Light", sans-serif, "Droid Sans Fallback";
+	font-size: 14px;
+	padding: 0 12px;
+	line-height: 22px;
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	color: #4080D0;
+	text-decoration: none;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+h1 code,
+h2 code,
+h3 code,
+h4 code,
+h5 code,
+h6 code {
+	font-size: inherit;
+	line-height: auto;
+}
+
+a:hover {
+	color: #4080D0;
+	text-decoration: underline;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left: 5px solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 14px;
+	line-height: 19px;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+.mac code {
+	font-size: 12px;
+	line-height: 18px;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+/** Theming */
+
+.vscode-light,
+.vscode-light pre code {
+	color: rgb(30, 30, 30);
+}
+
+.vscode-dark,
+.vscode-dark pre code {
+	color: #DDD;
+}
+
+.vscode-high-contrast,
+.vscode-high-contrast pre code {
+	color: white;
+}
+
+.vscode-light code {
+	color: #A31515;
+}
+
+.vscode-dark code {
+	color: #D7BA7D;
+}
+
+.vscode-light pre:not(.hljs),
+.vscode-light code > div {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre:not(.hljs),
+.vscode-dark code > div {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre:not(.hljs),
+.vscode-high-contrast code > div {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+.vscode-light blockquote,
+.vscode-dark blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.vscode-high-contrast blockquote {
+	background: transparent;
+	border-color: #fff;
+}
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+</style>
+
+</head>
+<body>
+<h1 id="%E5%BA%8F%E6%96%87">序文</h1>
+<blockquote>
+<p>axis-css 是什么?这其实是一种 css 代码命名与开发规范,其引用了 BEM 的思想,通过对页面结构的分析,将页面解耦为一个个可独立使用的组件,从而达到良好的重用与二次开发管理.</p>
+</blockquote>
+<!-- TOC -->
+<ul>
+<li><a href="#%E5%BA%8F%E6%96%87">序文</a>
+<ul>
+<li><a href="#%E5%88%86%E7%B1%BB">分类</a>
+<ul>
+<li><a href="#css-%E6%96%87%E4%BB%B6%E7%9A%84%E5%88%86%E7%B1%BB%E5%92%8C%E5%BC%95%E7%94%A8%E9%A1%BA%E5%BA%8F">CSS 文件的分类和引用顺序</a></li>
+<li><a href="#css-%E5%86%85%E9%83%A8%E7%9A%84%E5%88%86%E7%B1%BB%E5%8F%8A%E5%85%B6%E9%A1%BA%E5%BA%8F">CSS 内部的分类及其顺序</a></li>
+</ul>
+</li>
+<li><a href="#%E5%91%BD%E5%90%8D%E8%A7%84%E5%88%99">命名规则</a>
+<ul>
+<li><a href="#%E4%BD%BF%E7%94%A8%E7%B1%BB%E9%80%89%E6%8B%A9%E5%99%A8%E6%94%BE%E5%BC%83-id-%E9%80%89%E6%8B%A9%E5%99%A8">使用类选择器，放弃 ID 选择器</a></li>
+<li><a href="#%E7%89%B9%E6%AE%8A%E5%AD%97%E7%AC%A6-%E8%BF%9E%E5%AD%97%E7%AC%A6">特殊字符：&quot;-&quot;连字符</a></li>
+<li><a href="#%E7%89%B9%E6%AE%8A%E5%AD%97%E7%AC%A6_%E8%BF%9E%E5%AD%97%E7%AC%A6">特殊字符：&quot;_&quot;连字符</a></li>
+<li><a href="#%E7%89%B9%E6%AE%8A%E5%AD%97%E7%AC%A6---%E4%BF%AE%E9%A5%B0%E7%AC%A6">特殊字符: &quot;--&quot;修饰符</a></li>
+<li><a href="#%E5%90%8E%E4%BB%A3%E9%80%89%E6%8B%A9%E5%99%A8%E5%91%BD%E5%90%8D">后代选择器命名</a></li>
+<li><a href="#%E7%9B%B8%E5%90%8C%E8%AF%AD%E4%B9%89%E7%9A%84%E4%B8%8D%E5%90%8C%E7%B1%BB%E5%91%BD%E5%90%8D">相同语义的不同类命名</a></li>
+<li><a href="#%E6%A8%A1%E5%9D%97%E5%92%8C%E5%85%83%E4%BB%B6%E7%9A%84%E6%89%A9%E5%B1%95%E7%B1%BB%E7%9A%84%E5%91%BD%E5%90%8D%E6%96%B9%E6%B3%95">模块和元件的扩展类的命名方法</a></li>
+<li><a href="#%E9%98%B2%E6%AD%A2%E6%B1%A1%E6%9F%93%E5%92%8C%E8%A2%AB%E6%B1%A1%E6%9F%93">防止污染和被污染</a></li>
+</ul>
+</li>
+<li><a href="#%E4%BB%A3%E7%A0%81%E6%A0%BC%E5%BC%8F">代码格式</a>
+<ul>
+<li><a href="#%E9%80%89%E6%8B%A9%E5%99%A8%E5%B1%9E%E6%80%A7%E5%92%8C%E5%80%BC%E9%83%BD%E4%BD%BF%E7%94%A8%E5%B0%8F%E5%86%99">选择器、属性和值都使用小写</a></li>
+<li><a href="#%E6%9C%80%E5%90%8E%E4%B8%80%E4%B8%AA%E5%80%BC%E4%B9%9F%E4%BB%A5%E5%88%86%E5%8F%B7%E7%BB%93%E5%B0%BE">最后一个值也以分号结尾</a></li>
+<li><a href="#%E7%9C%81%E7%95%A5%E5%80%BC%E4%B8%BA-0-%E6%97%B6%E7%9A%84%E5%8D%95%E4%BD%8D">省略值为 0 时的单位</a></li>
+<li><a href="#%E4%BD%BF%E7%94%A8%E5%8D%95%E5%BC%95%E5%8F%B7">使用单引号</a></li>
+<li><a href="#%E4%BD%BF%E7%94%A8-16-%E8%BF%9B%E5%88%B6%E8%A1%A8%E7%A4%BA%E9%A2%9C%E8%89%B2%E5%80%BC">使用 16 进制表示颜色值</a></li>
+<li><a href="#%E6%A0%B9%E6%8D%AE%E5%B1%9E%E6%80%A7%E7%9A%84%E9%87%8D%E8%A6%81%E6%80%A7%E6%8C%89%E9%A1%BA%E5%BA%8F%E4%B9%A6%E5%86%99">根据属性的重要性按顺序书写</a></li>
+<li><a href="#%E7%A7%81%E6%9C%89%E5%9C%A8%E5%89%8D%E6%A0%87%E5%87%86%E5%9C%A8%E5%90%8E">私有在前，标准在后</a></li>
+<li><a href="#%E9%80%89%E6%8B%A9%E5%99%A8%E9%A1%BA%E5%BA%8F">选择器顺序</a></li>
+<li><a href="#%E7%BB%9F%E4%B8%80%E8%AF%AD%E4%B9%89%E7%90%86%E8%A7%A3%E5%92%8C%E5%91%BD%E5%90%8D">统一语义理解和命名</a></li>
+</ul>
+</li>
+<li><a href="#bem-%E7%AE%80%E4%BB%8B">BEM 简介</a>
+<ul>
+<li><a href="#%E5%9D%97">块</a></li>
+<li><a href="#%E5%85%83%E7%B4%A0">元素</a></li>
+<li><a href="#%E8%A3%85%E9%A5%B0%E5%8F%8A%E7%8A%B6%E6%80%81">装饰及状态</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<!-- /TOC -->
+<h2 id="%E5%88%86%E7%B1%BB">分类</h2>
+<h3 id="css-%E6%96%87%E4%BB%B6%E7%9A%84%E5%88%86%E7%B1%BB%E5%92%8C%E5%BC%95%E7%94%A8%E9%A1%BA%E5%BA%8F">CSS 文件的分类和引用顺序</h3>
+<p>通常，一个项目我们只引用一个 CSS，但是对于较大的项目，我们需要把 CSS 文件进行分类。</p>
+<p>我们按照 CSS 的性质和用途，将 CSS 文件分成“公共型样式”、“特殊型样式”、“皮肤型样式”，并以此顺序引用（按需求决定是否添加版本号）。</p>
+<ol>
+<li>公共型样式：包括了以下几个部分：“标签的重置和设置默认值”、“统一调用背景图和清除浮动或其他需统一处理的长样式”、“网站通用布局”、“通用模块和其扩展”、“功能类样式”、“皮肤类样式”。</li>
+<li>特殊型样式：当某个栏目或页面的样式与网站整体差异较大或者维护率较高时，可以独立引用一个样式：“特殊的布局、模块和元件及扩展”、“特殊的功能、颜色和背景”，也可以是某个大型控件或模块的独立样式。</li>
+<li>皮肤型样式：如果产品需要换肤功能，那么我们需要将颜色、背景等抽离出来放在这里。</li>
+</ol>
+<h3 id="css-%E5%86%85%E9%83%A8%E7%9A%84%E5%88%86%E7%B1%BB%E5%8F%8A%E5%85%B6%E9%A1%BA%E5%BA%8F">CSS 内部的分类及其顺序</h3>
+<ol>
+<li>重置（reset）和默认（base）（tags）：消除默认样式和浏览器差异，并设置部分标签的初始样式，以减少后面的重复劳动！你可以根据你的网站需求设置！</li>
+<li>布局（grid）（.g-）：将页面分割为几个大块，通常有头部、主体、主栏、侧栏、尾部等！</li>
+<li>模块（block）（.m-）：通常是一个语义化的可以重复使用的较大的整体！比如导航、登录、注册、各种列表、评论、搜索等！</li>
+<li>元素（element）（.m_element）：通常是一个不可再分的较为小巧的个体，通常被重复用于各种模块中,且依赖于模块而存在！比如按钮、输入框、loading、图标等！</li>
+<li>状态或装饰（modify）：为状态类样式加入前缀，统一标识，方便识别，她只能组合使用或作为后代出现（.m-list .m-list__vertical），具体详见命名规则的扩展相关项。</li>
+<li>功能（function）（.f-）：为方便一些常用样式的使用，我们将这些使用率较高的样式剥离出来，按需使用，通常这些选择器具有固定样式表现，比如清除浮动等！不可滥用！</li>
+<li>皮肤（skin）（.s-）：如果你需要把皮肤型的样式抽离出来，通常为文字色、背景色（图）、边框色等，非换肤型网站通常只提取文字色！非换肤型网站不可滥用此类！</li>
+<li>原子(.element) : 单一的,无法影响其他类的,甚至无法复用的 css 类,它与元素不同点在于,不需要依赖于模块而可以独立存在,原子类中最好不要控制布局,且最好功能单一</li>
+</ol>
+<h2 id="%E5%91%BD%E5%90%8D%E8%A7%84%E5%88%99">命名规则</h2>
+<h3 id="%E4%BD%BF%E7%94%A8%E7%B1%BB%E9%80%89%E6%8B%A9%E5%99%A8%EF%BC%8C%E6%94%BE%E5%BC%83-id-%E9%80%89%E6%8B%A9%E5%99%A8">使用类选择器，放弃 ID 选择器</h3>
+<p>ID 在一个页面中的唯一性导致了如果以 ID 为选择器来写 CSS，就无法重用。</p>
+<h3 id="%E7%89%B9%E6%AE%8A%E5%AD%97%E7%AC%A6%EF%BC%9A-%E8%BF%9E%E5%AD%97%E7%AC%A6">特殊字符：&quot;-&quot;连字符</h3>
+<p>&quot;-&quot;在本规范中并不表示连字符的含义。</p>
+<p>它只表示两种含义：分类前缀分隔符，详见以下具体规则。</p>
+<h3 id="%E7%89%B9%E6%AE%8A%E5%AD%97%E7%AC%A6%EF%BC%9A%E8%BF%9E%E5%AD%97%E7%AC%A6">特殊字符：&quot;_&quot;连字符</h3>
+<p>&quot;_&quot;在本规范中并不表示引用的含义。</p>
+<p>它只表示一种含义：模块与元素之间的关联符，详见以下具体规则。</p>
+<h3 id="%E7%89%B9%E6%AE%8A%E5%AD%97%E7%AC%A6---%E4%BF%AE%E9%A5%B0%E7%AC%A6">特殊字符: &quot;--&quot;修饰符</h3>
+<p>&quot;--&quot;在本规范中表示修饰符的含义</p>
+<p>它只表示模块及元素的装饰或状态</p>
+<h3 id="%E5%90%8E%E4%BB%A3%E9%80%89%E6%8B%A9%E5%99%A8%E5%91%BD%E5%90%8D">后代选择器命名</h3>
+<p>约定不以单个字母+&quot;-&quot;为前缀且长度大于等于 2 的类选择器为后代选择器.</p>
+<p>这里的后代指两个 block 相互嵌套,在不考虑复用时,即可以使用后代选择器,同时,后代选择器的优先级会高于普通的 BEM 选择器,所以需要注意使用方式,最高支持两个 block 元素相互嵌套.</p>
+<p>通过使用后代选择器的方法，你不需要考虑他的命名是否已被使用，因为他只在当前模块或元件中生效，同样的样式名可以在不同的模块或元件中重复使用，互不干扰；在多人协作或者分模块协作的时候效果尤为明显！</p>
+<p><strong>注：后代选择器不要在页面布局中使用，因为污染的可能性较大；</strong></p>
+<pre class="hljs"><code><div>/* 这里的.itm和.cnt只在.m-list中有效 */
+.m-list{margin:0;padding:0;}
+.m-list .m-menu_itm{margin:1px;padding:1px;}
+.m-list .m-menu_cnt{margin-left:100px;}
+/* 这里的.cnt和.num只在.m-page中有效 */
+.m-page{height:20px;}
+.m-page .m-menu_cnt{text-align:center;}
+.m-page .m-menu_num{border:1px solid #ddd;}
+</div></code></pre>
+<h3 id="%E7%9B%B8%E5%90%8C%E8%AF%AD%E4%B9%89%E7%9A%84%E4%B8%8D%E5%90%8C%E7%B1%BB%E5%91%BD%E5%90%8D">相同语义的不同类命名</h3>
+<p>方法：直接加数字或字母区分即可（如：.m-list、.m-list2、.m-list3 等，都是列表模块，但是是完全不一样的模块）。</p>
+<p>其他举例：.f-fw0、.f-fw1、.s-fc0、.s-fc1、.m-logo2、.m-logo3、m-button1、m-button2 等等。</p>
+<h3 id="%E6%A8%A1%E5%9D%97%E5%92%8C%E5%85%83%E4%BB%B6%E7%9A%84%E6%89%A9%E5%B1%95%E7%B1%BB%E7%9A%84%E5%91%BD%E5%90%8D%E6%96%B9%E6%B3%95">模块和元件的扩展类的命名方法</h3>
+<p>遵循 BEM 的命名规范,以<strong>block-element__modify</strong>作为扩展方式.</p>
+<h3 id="%E9%98%B2%E6%AD%A2%E6%B1%A1%E6%9F%93%E5%92%8C%E8%A2%AB%E6%B1%A1%E6%9F%93">防止污染和被污染</h3>
+<p>当模块或元件之间互相嵌套，且使用了相同的标签选择器或其他后代选择器，那么里面的选择器就会被外面相同的选择器所影响。</p>
+<p>所以，如果你的模块或元件可能嵌套或被嵌套于其他模块或元件，那么要慎用标签选择器，必要时采用类选择器，并注意命名方式，可以采用.m-layer .layerxxx、.m-list2 .list2xxx 的形式来降低后代选择器的污染性。</p>
+<h2 id="%E4%BB%A3%E7%A0%81%E6%A0%BC%E5%BC%8F">代码格式</h2>
+<h3 id="%E9%80%89%E6%8B%A9%E5%99%A8%E3%80%81%E5%B1%9E%E6%80%A7%E5%92%8C%E5%80%BC%E9%83%BD%E4%BD%BF%E7%94%A8%E5%B0%8F%E5%86%99">选择器、属性和值都使用小写</h3>
+<p>在 xhtml 标准中规定了所有标签、属性和值都小写，CSS 也是如此。</p>
+<h3 id="%E6%9C%80%E5%90%8E%E4%B8%80%E4%B8%AA%E5%80%BC%E4%B9%9F%E4%BB%A5%E5%88%86%E5%8F%B7%E7%BB%93%E5%B0%BE">最后一个值也以分号结尾</h3>
+<p>通常在大括号结束前的值可以省略分号，但是这样做会对修改、添加和维护工作带来不必要的失误和麻烦。</p>
+<h3 id="%E7%9C%81%E7%95%A5%E5%80%BC%E4%B8%BA-0-%E6%97%B6%E7%9A%84%E5%8D%95%E4%BD%8D">省略值为 0 时的单位</h3>
+<p>为节省不必要的字节同时也使阅读方便，我们将 0px、0em、0%等值缩写为 0。</p>
+<pre class="hljs"><code><div>.m-box{margin:0 10px;background-position:50% 0;}
+</div></code></pre>
+<h3 id="%E4%BD%BF%E7%94%A8%E5%8D%95%E5%BC%95%E5%8F%B7">使用单引号</h3>
+<p>省略 url 引用中的引号，其他需要引号的地方使用单引号。</p>
+<pre class="hljs"><code><div>.m-box{background:url(bg.png);}
+.m-box:after{content:'.';}
+</div></code></pre>
+<h3 id="%E4%BD%BF%E7%94%A8-16-%E8%BF%9B%E5%88%B6%E8%A1%A8%E7%A4%BA%E9%A2%9C%E8%89%B2%E5%80%BC">使用 16 进制表示颜色值</h3>
+<p>除非你需要透明度而使用 rgba，否则都使用#f0f0f0 这样的表示方法，并尽量缩写。</p>
+<pre class="hljs"><code><div>.m-box{color:#f00;background:rgba(0,0,0,0.5);}
+</div></code></pre>
+<h3 id="%E6%A0%B9%E6%8D%AE%E5%B1%9E%E6%80%A7%E7%9A%84%E9%87%8D%E8%A6%81%E6%80%A7%E6%8C%89%E9%A1%BA%E5%BA%8F%E4%B9%A6%E5%86%99">根据属性的重要性按顺序书写</h3>
+<p>只遵循横向顺序即可，先显示定位布局类属性，后盒模型等自身属性，最后是文本类及修饰类属性。</p>
+<table>
+<thead>
+<tr>
+<th>显示属性</th>
+<th>自身属性</th>
+<th>文本属性和其他修饰</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>display</td>
+<td>width</td>
+<td>font</td>
+</tr>
+<tr>
+<td>visibility</td>
+<td>height</td>
+<td>text-align</td>
+</tr>
+<tr>
+<td>position</td>
+<td>margin</td>
+<td>text-decoration</td>
+</tr>
+<tr>
+<td>float</td>
+<td>padding</td>
+<td>vertical-align</td>
+</tr>
+<tr>
+<td>clear</td>
+<td>border</td>
+<td>white-space</td>
+</tr>
+<tr>
+<td>list-style</td>
+<td>overflow</td>
+<td>color</td>
+</tr>
+<tr>
+<td>top</td>
+<td>min-width</td>
+<td>background</td>
+</tr>
+</tbody>
+</table>
+<h3 id="%E7%A7%81%E6%9C%89%E5%9C%A8%E5%89%8D%EF%BC%8C%E6%A0%87%E5%87%86%E5%9C%A8%E5%90%8E">私有在前，标准在后</h3>
+<p>先写带有浏览器私有标志的，后写 W3C 标准的。</p>
+<pre class="hljs"><code><div>.m-box{-webkit-box-shadow:0 0 0 #000;-moz-box-shadow:0 0 0 #000;box-shadow:0 0 0 #000;}
+</div></code></pre>
+<h3 id="%E9%80%89%E6%8B%A9%E5%99%A8%E9%A1%BA%E5%BA%8F">选择器顺序</h3>
+<p>请综合考虑以下顺序依据：</p>
+<p>从大到小（以选择器的范围为准）从低到高（以等级上的高低为准）从先到后（以结构上的先后为准）从父到子（以结构上的嵌套为准）以下仅为简单示范：</p>
+<p>以下仅为简单示范：</p>
+<pre class="hljs"><code><div>/* 从大到小 */
+.m-list p{margin:0;padding:0;}
+.m-list p.part{margin:1px;padding:1px;}
+/* 从低到高 */
+.m-logo a{color:#f00;}
+.m-logo a:hover{color:#fff;}
+/* 从先到后 */
+.g-hd{height:60px;}
+.g-bd{height:60px;}
+.g-ft{height:60px;}
+/* 从父到子 */
+.m-list{width:300px;}
+.m-list .itm{float:left;}
+</div></code></pre>
+<h3 id="%E7%BB%9F%E4%B8%80%E8%AF%AD%E4%B9%89%E7%90%86%E8%A7%A3%E5%92%8C%E5%91%BD%E5%90%8D">统一语义理解和命名</h3>
+<p>布局（.g-）</p>
+<table>
+<thead>
+<tr>
+<th>语义</th>
+<th>命名</th>
+<th>简写</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>文档</td>
+<td>doc</td>
+<td>doc</td>
+</tr>
+<tr>
+<td>头部</td>
+<td>head</td>
+<td>hd</td>
+</tr>
+<tr>
+<td>主体</td>
+<td>body</td>
+<td>bd</td>
+</tr>
+<tr>
+<td>尾部</td>
+<td>foot</td>
+<td>ft</td>
+</tr>
+<tr>
+<td>主栏</td>
+<td>main</td>
+<td>mn</td>
+</tr>
+<tr>
+<td>主栏子容器</td>
+<td>mainc</td>
+<td>mnc</td>
+</tr>
+<tr>
+<td>侧栏</td>
+<td>side</td>
+<td>sd</td>
+</tr>
+<tr>
+<td>侧栏子容器</td>
+<td>sidec</td>
+<td>sdc</td>
+</tr>
+<tr>
+<td>盒容器</td>
+<td>wrap/box</td>
+<td>wrap/box</td>
+</tr>
+</tbody>
+</table>
+<p>模块（.m-）</p>
+<table>
+<thead>
+<tr>
+<th>语义</th>
+<th>命名</th>
+<th>简写</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>导航</td>
+<td>nav</td>
+<td>nav</td>
+</tr>
+<tr>
+<td>子导航</td>
+<td>subnav</td>
+<td>snav</td>
+</tr>
+<tr>
+<td>面包屑</td>
+<td>crumb</td>
+<td>crm</td>
+</tr>
+<tr>
+<td>菜单</td>
+<td>menu</td>
+<td>menu</td>
+</tr>
+<tr>
+<td>选项卡</td>
+<td>tab</td>
+<td>tab</td>
+</tr>
+<tr>
+<td>标题区</td>
+<td>head/title</td>
+<td>hd/tt</td>
+</tr>
+<tr>
+<td>内容区</td>
+<td>body/content</td>
+<td>bd/ct</td>
+</tr>
+<tr>
+<td>列表</td>
+<td>list</td>
+<td>lst</td>
+</tr>
+<tr>
+<td>表格</td>
+<td>table</td>
+<td>tb</td>
+</tr>
+<tr>
+<td>表单</td>
+<td>form</td>
+<td>fm</td>
+</tr>
+<tr>
+<td>热点</td>
+<td>hot</td>
+<td>hot</td>
+</tr>
+<tr>
+<td>排行</td>
+<td>top</td>
+<td>top</td>
+</tr>
+<tr>
+<td>登录</td>
+<td>login</td>
+<td>log</td>
+</tr>
+<tr>
+<td>标志</td>
+<td>logo</td>
+<td>logo</td>
+</tr>
+<tr>
+<td>广告</td>
+<td>advertise</td>
+<td>ad</td>
+</tr>
+<tr>
+<td>搜索</td>
+<td>search</td>
+<td>sch</td>
+</tr>
+<tr>
+<td>幻灯</td>
+<td>slide</td>
+<td>sld</td>
+</tr>
+<tr>
+<td>提示</td>
+<td>tips</td>
+<td>tips</td>
+</tr>
+<tr>
+<td>帮助</td>
+<td>help</td>
+<td>help</td>
+</tr>
+<tr>
+<td>新闻</td>
+<td>news</td>
+<td>news</td>
+</tr>
+<tr>
+<td>下载</td>
+<td>download</td>
+<td>dld</td>
+</tr>
+<tr>
+<td>注册</td>
+<td>regist</td>
+<td>reg</td>
+</tr>
+<tr>
+<td>投票</td>
+<td>vote</td>
+<td>vote</td>
+</tr>
+<tr>
+<td>版权</td>
+<td>copyright</td>
+<td>cprt</td>
+</tr>
+<tr>
+<td>结果</td>
+<td>result</td>
+<td>rst</td>
+</tr>
+<tr>
+<td>标题</td>
+<td>title</td>
+<td>tt</td>
+</tr>
+<tr>
+<td>按钮</td>
+<td>button</td>
+<td>btn</td>
+</tr>
+<tr>
+<td>输入</td>
+<td>input</td>
+<td>ipt</td>
+</tr>
+<tr>
+<td>卡片</td>
+<td>card</td>
+<td>cd</td>
+</tr>
+</tbody>
+</table>
+<p>功能（.f-）</p>
+<table>
+<thead>
+<tr>
+<th>语义</th>
+<th>命名</th>
+<th>简写</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>浮动清除</td>
+<td>clearboth</td>
+<td>cb</td>
+</tr>
+<tr>
+<td>向左浮动</td>
+<td>floatleft</td>
+<td>fl</td>
+</tr>
+<tr>
+<td>向右浮动</td>
+<td>floatright</td>
+<td>fr</td>
+</tr>
+<tr>
+<td>内联块级</td>
+<td>inlineblock</td>
+<td>ib</td>
+</tr>
+<tr>
+<td>文本居中</td>
+<td>textaligncenter</td>
+<td>tac</td>
+</tr>
+<tr>
+<td>文本居右</td>
+<td>textalignright</td>
+<td>tar</td>
+</tr>
+<tr>
+<td>文本居左</td>
+<td>textalignleft</td>
+<td>tal</td>
+</tr>
+<tr>
+<td>垂直居中</td>
+<td>verticalalignmiddle</td>
+<td>vam</td>
+</tr>
+<tr>
+<td>溢出隐藏</td>
+<td>overflowhidden</td>
+<td>oh</td>
+</tr>
+<tr>
+<td>完全消失</td>
+<td>displaynone</td>
+<td>dn</td>
+</tr>
+<tr>
+<td>字体大小</td>
+<td>fontsize</td>
+<td>fs</td>
+</tr>
+<tr>
+<td>字体粗细</td>
+<td>fontweight</td>
+<td>fw</td>
+</tr>
+</tbody>
+</table>
+<p>皮肤（.s-）</p>
+<table>
+<thead>
+<tr>
+<th>语义</th>
+<th>命名</th>
+<th>简写</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>字体颜色</td>
+<td>fontcolor</td>
+<td>fc</td>
+</tr>
+<tr>
+<td>背景</td>
+<td>background</td>
+<td>bg</td>
+</tr>
+<tr>
+<td>背景颜色</td>
+<td>backgroundcolor</td>
+<td>bgc</td>
+</tr>
+<tr>
+<td>背景图片</td>
+<td>backgroundimage</td>
+<td>bgi</td>
+</tr>
+<tr>
+<td>背景定位</td>
+<td>backgroundposition</td>
+<td>bgp</td>
+</tr>
+<tr>
+<td>边框颜色</td>
+<td>bordercolor</td>
+<td>bdc</td>
+</tr>
+</tbody>
+</table>
+<p>状态（modify）</p>
+<table>
+<thead>
+<tr>
+<th>语义</th>
+<th>命名</th>
+<th>简写</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>选中</td>
+<td>selected</td>
+<td>sel</td>
+</tr>
+<tr>
+<td>当前</td>
+<td>current</td>
+<td>crt</td>
+</tr>
+<tr>
+<td>显示</td>
+<td>show</td>
+<td>show</td>
+</tr>
+<tr>
+<td>隐藏</td>
+<td>hide</td>
+<td>hide</td>
+</tr>
+<tr>
+<td>打开</td>
+<td>open</td>
+<td>open</td>
+</tr>
+<tr>
+<td>关闭</td>
+<td>close</td>
+<td>close</td>
+</tr>
+<tr>
+<td>出错</td>
+<td>error</td>
+<td>err</td>
+</tr>
+<tr>
+<td>不可用</td>
+<td>disabled</td>
+<td>dis</td>
+</tr>
+</tbody>
+</table>
+<h2 id="bem-%E7%AE%80%E4%BB%8B">BEM 简介</h2>
+<h3 id="%E5%9D%97">块</h3>
+<p>一个块是一个独立的实体，就像应用的一块“积木”。一个块既可以是简单的也可以是复合的（包含其他块）。</p>
+<p>例如搜索表单块：</p>
+<p><img src="./img/block.jpg" alt="alt"></p>
+<h3 id="%E5%85%83%E7%B4%A0">元素</h3>
+<p>一个元素是块的一部分，具有某种功能。元素是依赖上下文的：它们只有处于他们应该属于的块的上下文中时才是有意义的。</p>
+<p>例如一个输入域和一个按钮是 Search 块的中的元素。</p>
+<p><img src="./img/element.jpg" alt="alt"></p>
+<h3 id="%E8%A3%85%E9%A5%B0%E5%8F%8A%E7%8A%B6%E6%80%81">装饰及状态</h3>
+<p>我们经常需要创建一个和已存在的块非常相似的块，只是外观或行为有些许改变。</p>
+<p>比如说我们有一个这样的任务：</p>
+<p>给 Footer 添加另外一个布局不一样的 Menu。</p>
+<p><img src="./img/modify-01.jpg" alt="alt"></p>
+<p>为了避免开发一个和现有的块只稍微有点不同的另一个块，我们引入修饰符（modifier）的概念。</p>
+<p>修饰符作为一个块或是一个元素的一种属性，代表这个块或这个元素在外观或是行为上的改变。</p>
+<p>一个修饰符有一个名字和一个值。多个修饰符可以同时使用</p>
+<p>例如：一个用来指定背景颜色的块修饰符(m-search--bg1)</p>
+<p><img src="./img/modify-02.jpg" alt="alt"></p>
+<p>例如：一个改变“当前”选项的元素修饰符(m-tab_item--selected)</p>
+<ul>
+<li><img src="./img/modify-03.jpg" alt="alt"></li>
+</ul>
+
+</body>
+</html>
