@@ -4,7 +4,8 @@
 
 - [知识点汇总](#知识点汇总)
     - [HTML5新特性，语义化](#html5新特性语义化)
-        - [SGMC,HTML,XML](#sgmchtmlxml)
+        - [DTD](#dtd)
+        - [SGML,HTML,XML](#sgmlhtmlxml)
         - [DOC类型](#doc类型)
         - [HTML5 与之前的版本区别](#html5-与之前的版本区别)
         - [HTML5与HTML4.01之间的差异](#html5与html401之间的差异)
@@ -44,7 +45,11 @@
 
 ## HTML5新特性，语义化
 
-### SGMC,HTML,XML
+### DTD
+
+Document type Definition指为了程序间的数据交换而建立的关于标识符的一套语法规则
+
+### SGML,HTML,XML
 
 * SGML 即Standard Globalized Markup Language 是用来定义标准的标记语言，简单的说，就是定义文档的元语言。
 * HTML 是基于SGML的超链接语言，可以用于创建Web页面。在DTD内部定义了标签的规则，DTD就是使用SGML 语言创建的。
@@ -53,9 +58,11 @@
 ### DOC类型
 
 创建HTML页面时:
+
 ```
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 ```
+
 这句代码简单的介绍了HTML 版本号，有了Doctype，就引入了对应的DTD（定义了HTML文档的组织结构），在页面中添加的所有标签才会是合法的，简单的说DTD 就是定义HTML的语法规则。
 即使在没有引入DTD的情况下，很多浏览器也可以识别HTML元素，因为它们自身包含对HTML 元素的定义，这就是为什么很多开发人员没有感受到DTD 的存在。
 
@@ -63,6 +70,7 @@
 
 HTML5不是基于SGML 语言的，因此不需要DTD ，它是一种全新的标记语言，有自己的解析规则，HTML5的语法规则与之前版本有很大的差别，可以称的上是一种全新的语言。
 HTML5 的Doctype 非常简单：
+
 ```
 <!DOCTYPE html>
 ```
@@ -99,7 +107,7 @@ HTML5的表单验证属性
 
 3. Audio,video等多媒体支持
 
-4. drag,drop,geolocation,本地存储localStorage
+4. drag,drop,geolocation,本地存储localStorage,web worker
 
 ### HTML的语义化
 
@@ -209,7 +217,7 @@ viewport content 参数：
 <meta name="viewport" content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
 ```
 
-指定了布局视口=理想视口，并且禁止缩放。所以添上width=device-width的viewport meta后页面变大了（一开始页面内容小得看不清），实际上是布局视口变小了。
+指定了布局视口=理想视口，并且禁止缩放。所以添上width=device-width的 viewport meta后页面变大了（一开始页面内容小得看不清），实际上是布局视口变小了。
 
 
 ## HTML5废弃的元素
