@@ -26,3 +26,28 @@ var isPalindrome = function(head) {
 
     return true;
 };
+
+/**
+ * @param {ListNode} head
+ * @return {ListNode}
+ */
+var detectCycle = function(head) {
+    if(!head || head.next === null) return null;
+
+    let [curr,fast,start] = [head,head,head];
+
+    while(curr && fast && fast.next){
+        curr = curr.next;
+        fast = fast.next.next;
+
+        if(curr === fast) {
+            while(start !== curr){
+                curr = curr.next;
+                start = start.next;
+            }
+            return curr
+        };
+    }
+
+    return null
+};
