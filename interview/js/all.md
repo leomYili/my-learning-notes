@@ -578,8 +578,10 @@ var cat = new Animal("cat");
 
 ```
 var obj = {};
+var args = Array.prototype.slice.call(arguments,1);
  obj.__proto__ = Animal.prototype;
- var result = Animal.call(obj,"cat");
+ obj.__proto__.constructor = Animal;
+ var result = Animal.apply(obj,args);
  return typeof result === 'obj'? result : obj;
 ```
 

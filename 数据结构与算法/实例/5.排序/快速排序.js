@@ -91,18 +91,18 @@ var sortArray = function (nums) {
 };
 
 /**
- * 
+ *
  */
-var sortArray = function(nums) {
+var sortArray = function (nums) {
     if (nums.length < 2) return nums;
-    return  quickSort(nums, 0, nums.length - 1);
+    return quickSort(nums, 0, nums.length - 1);
 };
 
 function quickSort(nums, left, right) {
     if (left >= right) return;
-    let pivotIndex = partition(nums, left, right)
-    quickSort(nums, left, pivotIndex - 1)
-    quickSort(nums, pivotIndex + 1, right)
+    let pivotIndex = partition(nums, left, right);
+    quickSort(nums, left, pivotIndex - 1);
+    quickSort(nums, pivotIndex + 1, right);
     return nums;
 }
 
@@ -114,8 +114,8 @@ function quickSort(nums, left, right) {
  * @param {*} right
  * @returns
  */
-function partition (nums, left, right) {
-    let pivot = right;// 这里取最后一个顶点
+function partition(nums, left, right) {
+    let pivot = right; // 这里取最后一个顶点
     let leftIndex = left;
 
     // 然后通过左侧判断，得到是否有例外情况比如之前都是顺序队列，也是为了确认是否可忽略这些判断，直接跳到要排序的地方

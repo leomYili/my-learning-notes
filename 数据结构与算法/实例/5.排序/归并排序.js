@@ -13,31 +13,7 @@ var sortArray = function (nums) {
     var left = nums.slice(0, mid);
     var right = nums.slice(mid, length);
 
-    return merge(sortArray(left), sortArray(right));
-
-    /**
-     * 这里使用赋值，直接指定对应下标的数组项的值
-     *
-     * @param {*} left
-     * @param {*} right
-     * @returns
-     */
-    function merge(left, right) {
-        var p1 = 0;
-        var p2 = 0;
-        var help = [];
-        var i = 0;
-        while (p1 < left.length && p2 < right.length) {
-            help[i++] = left[p1] < right[p2] ? left[p1++] : right[p2++];
-        }
-        while (p1 < left.length) {
-            help[i++] = left[p1++];
-        }
-        while (p2 < right.length) {
-            help[i++] = right[p2++];
-        }
-        return help;
-    }
+    return mergeList(sortArray(left), sortArray(right));
 
     /**
      * 这里使用push，直接加入数组的末尾
@@ -66,5 +42,29 @@ var sortArray = function (nums) {
             res.push(right[ir++]);
         }
         return res;
+    }
+
+    /**
+     * 这里使用赋值，直接指定对应下标的数组项的值
+     *
+     * @param {*} left
+     * @param {*} right
+     * @returns
+     */
+    function merge(left, right) {
+        var p1 = 0;
+        var p2 = 0;
+        var help = [];
+        var i = 0;
+        while (p1 < left.length && p2 < right.length) {
+            help[i++] = left[p1] < right[p2] ? left[p1++] : right[p2++];
+        }
+        while (p1 < left.length) {
+            help[i++] = left[p1++];
+        }
+        while (p2 < right.length) {
+            help[i++] = right[p2++];
+        }
+        return help;
     }
 };

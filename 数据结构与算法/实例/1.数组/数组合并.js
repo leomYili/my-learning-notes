@@ -7,14 +7,14 @@
  * @param {number} n
  * @return {void} Do not return anything, modify nums1 in-place instead.
  */
-var merge = function (nums1, m, nums2, n) {
-    if (nums1.length === 0) return nums2;
-    if (nums2.length === 0) return nums1;
+/* var merge = function (nums1, m, nums2, n) {
+    if (m === 0) return nums2;
+    if (n === 0) return nums1;
 
     var arr = nums1.splice(m, n, ...nums2);
 
     return arr.sort((a, b) => a - b);
-};
+}; */
 
 /**
  * 这里采用直接比较的方法，将nums1的对应下标位置所对应的值直接做替换，

@@ -34,8 +34,6 @@ var calculate = function (s) {
         }
     }
 
-    console.log(stack);
-
     return sum;
 };
 
