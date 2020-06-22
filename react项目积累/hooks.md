@@ -1,0 +1,444 @@
+# 正文
+
+## React为什么要搞一个hooks
+
+想要复用一个有状态的组件太麻烦了！
+
+我们都知道react都核心思想就是，将一个页面拆成一堆独立的，可复用的组件，并且用自上而下的单向数据流的形式将这些组件串联起来。但假如你在大型的工作项目中用react，你会发现你的项目中实际上很多react组件冗长且难以复用。尤其是那些写成class的组件，它们本身包含了状态（state），所以复用这类组件就变得很麻烦。
+
+那之前，官方推荐怎么解决这个问题呢？答案是：渲染属性（Render Props）和高阶组件（Higher-Order Components）。
+
+### 渲染属性
+
+渲染属性指的是使用一个值为函数的prop来传递需要动态渲染的nodes或组件。如下面的代码可以看到我们的DataProvider组件包含了所有跟状态相关的代码，而Cat组件则可以是一个单纯的展示型组件，这样一来DataProvider就可以单独复用了。
+
+```()
+import Cat from 'components/cat'
+class DataProvider extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { target: 'Zac' };
+  }
+
+  render() {
+    return (
+      <div>
+        {this.props.render(this.state)}
+      </div>
+    )
+  }
+}
+
+<DataProvider render={data => (
+  <Cat target={data.target} />
+)}/>
+```
+
+虽然这个模式叫Render Props，但不是说非用一个叫render的props不可，习惯上大家更常写成下面这种：
+
+```()
+<DataProvider>
+  {data => (
+    <Cat target={data.target} />
+  )}
+</DataProvider>
+```
+
+### 高阶组件
+
+高阶组件这个概念就更好理解了，说白了就是一个函数接受一个组件作为参数，经过一系列加工后，最后返回一个新的组件。看下面的代码示例，withUser函数就是一个高阶组件，它返回了一个新的组件，这个组件具有了它提供的获取用户信息的功能。
+
+```()
+const withUser = WrappedComponent => {
+  const user = sessionStorage.getItem("user");
+  return props => <WrappedComponent user={user} {...props} />;
+};
+
+const UserPage = props => (
+  <div class="user-container">
+    <p>My name is {props.user}!</p>
+  </div>
+);
+
+export default withUser(UserPage);
+```
+
+以上这两种模式看上去都挺不错的，很多库也运用了这种模式，比如我们常用的React Router。但我们仔细看这两种模式，会发现它们会增加我们代码的层级关系。最直观的体现，打开devtool看看你的组件层级嵌套是不是很夸张吧。这时候再回过头看我们上一节给出的hooks例子，是不是简洁多了，没有多余的层级嵌套。把各种想要的功能写成一个一个可复用的自定义hook，当你的组件想用什么功能时，直接在组件里调用这个hook即可。
+
+### 生命周期钩子函数里的逻辑太乱了吧
+
+我们通常希望一个函数只做一件事情，但我们的生命周期钩子函数里通常同时做了很多事情。比如我们需要在componentDidMount中发起ajax请求获取数据，绑定一些事件监听等等。同时，有时候我们还需要在componentDidUpdate做一遍同样的事情。当项目变复杂后，这一块的代码也变得不那么直观。
+
+### classes真的太让人困惑了
+
+我们用class来创建react组件时，还有一件很麻烦的事情，就是this的指向问题。为了保证this的指向正确，我们要经常写这样的代码：`this.handleClick = this.handleClick.bind(this)`，或者是这样的代码：`<button onClick={() => this.handleClick(e)}>`。一旦我们不小心忘了绑定this，各种bug就随之而来，很麻烦。
+
+## 什么是State Hooks
+
+```()
+import { useState } from 'react';
+
+function Example() {
+  const [count, setCount] = useState(0);
+
+  return (
+    <div>
+      <p>You clicked {count} times</p>
+      <button onClick={() => setCount(count + 1)}>
+        Click me
+      </button>
+    </div>
+  );
+}
+```
+
+### 声明一个状态变量
+
+```()
+import { useState } from 'react';
+
+function Example() {
+  const [count, setCount] = useState(0);
+}
+```
+
+useState是react自带的一个hook函数，它的作用就是用来声明状态变量。useState这个函数接收的参数是我们的状态初始值（initial state），它返回了一个数组，这个数组的第[0]项是当前当前的状态值，第[1]项是可以改变状态值的方法函数。
+
+如果不用数组解构的话，可以写成下面这样。实际上数组解构是一件开销很大的事情，用下面这种写法，或者改用对象解构，性能会有很大的提升。
+
+```()
+let _useState = useState(0);
+let count = _useState[0];
+let setCount = _useState[1];
+```
+
+### 读取状态值
+
+```()
+<p>You clicked {count} times</p>
+```
+
+是不是超简单？因为我们的状态count就是一个单纯的变量而已，我们再也不需要写成{this.state.count}这样了。
+
+### 更新状态
+
+```()
+  <button onClick={() => setCount(count + 1)}>
+    Click me
+  </button>
+```
+
+react如何帮我们记住state中的值;
+
+### 假如一个组件有多个状态值怎么办
+
+useState是可以多次调用的，所以我们完全可以这样写：
+
+```()
+function ExampleWithManyStates() {
+  const [age, setAge] = useState(42);
+  const [fruit, setFruit] = useState('banana');
+  const [todos, setTodos] = useState([{ text: 'Learn Hooks' }]);
+
+```
+
+其次，useState接收的初始值没有规定一定要是string/number/boolean这种简单数据类型，它完全可以接收对象或者数组作为参数。唯一需要注意的点是，之前我们的this.setState做的是合并状态后返回一个新状态，而useState是直接替换老状态后返回新状态。最后，react也给我们提供了一个useReducer的hook，如果你更喜欢redux式的状态管理方案的话。
+
+从ExampleWithManyStates函数我们可以看到，useState无论调用多少次，相互之间是独立的。这一点至关重要。为什么这么说呢？
+其实我们看hook的“形态”，有点类似之前被官方否定掉的Mixins这种方案，都是提供一种“插拔式的功能注入”的能力。而mixins之所以被否定，是因为Mixins机制是让多个Mixins共享一个对象的数据空间，这样就很难确保不同Mixins依赖的状态不发生冲突。
+而现在我们的hook，一方面它是直接用在function当中，而不是class；另一方面每一个hook都是相互独立的，不同组件调用同一个hook也能保证各自状态的独立性。这就是两者的本质区别了。
+
+### react是怎么保证多个useState的相互独立的
+
+还是看上面给出的ExampleWithManyStates例子，我们调用了三次useState，每次我们传的参数只是一个值（如42，‘banana’），我们根本没有告诉react这些值对应的key是哪个，那react是怎么保证这三个useState找到它对应的state呢？
+
+答案是，react是根据useState出现的顺序来定的。我们具体来看一下：
+
+```()
+  //第一次渲染
+  useState(42);  //将age初始化为42
+  useState('banana');  //将fruit初始化为banana
+  useState([{ text: 'Learn Hooks' }]); //...
+
+  //第二次渲染
+  useState(42);  //读取状态变量age的值（这时候传的参数42直接被忽略）
+  useState('banana');  //读取状态变量fruit的值（这时候传的参数banana直接被忽略）
+  useState([{ text: 'Learn Hooks' }]); //...
+```
+
+假如我们改一下代码：
+
+```()
+let showFruit = true;
+function ExampleWithManyStates() {
+  const [age, setAge] = useState(42);
+  
+  if(showFruit) {
+    const [fruit, setFruit] = useState('banana');
+    showFruit = false;
+  }
+
+  const [todos, setTodos] = useState([{ text: 'Learn Hooks' }]);
+}
+```
+
+```（）
+  //第一次渲染
+  useState(42);  //将age初始化为42
+  useState('banana');  //将fruit初始化为banana
+  useState([{ text: 'Learn Hooks' }]); //...
+
+  //第二次渲染
+  useState(42);  //读取状态变量age的值（这时候传的参数42直接被忽略）
+  // useState('banana');  
+  useState([{ text: 'Learn Hooks' }]); //读取到的却是状态变量fruit的值，导致报错
+```
+
+鉴于此，react规定我们必须把hooks写在函数的最外层，不能写在**ifelse**等条件语句当中，来确保hooks的执行顺序一致。
+
+### 什么是Effect Hooks
+
+```()
+import { useState, useEffect } from 'react';
+
+function Example() {
+  const [count, setCount] = useState(0);
+
+  // 类似于componentDidMount 和 componentDidUpdate:
+  useEffect(() => {
+    // 更新文档的标题
+    document.title = `You clicked ${count} times`;
+  });
+
+  return (
+    <div>
+      <p>You clicked {count} times</p>
+      <button onClick={() => setCount(count + 1)}>
+        Click me
+      </button>
+    </div>
+  );
+}
+```
+
+我们写的有状态组件，通常会产生很多的副作用（side effect），比如发起ajax请求获取数据，添加一些监听的注册和取消注册，手动修改dom等等。我们之前都把这些副作用的函数写在生命周期函数钩子里，比如componentDidMount，componentDidUpdate和componentWillUnmount。而现在的useEffect就相当与这些声明周期函数钩子的集合体。它以一抵三。
+
+同时，由于前文所说hooks可以反复多次使用，相互独立。所以我们合理的做法是，给每一个副作用一个单独的useEffect钩子。这样一来，这些副作用不再一股脑堆在生命周期钩子里，代码变得更加清晰。
+
+#### useEffect做了什么
+
+```()
+function Example() {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    document.title = `You clicked ${count} times`;
+  });
+}
+```
+
+首先，我们声明了一个状态变量count，将它的初始值设为0。然后我们告诉react，我们的这个组件有一个副作用。我们给useEffecthook传了一个匿名函数，这个匿名函数就是我们的副作用。在这个例子里，我们的副作用是调用browser API来修改文档标题。当react要渲染我们的组件时，它会先记住我们用到的副作用。等react更新了DOM之后，它再依次执行我们定义的副作用函数。
+
+这里要注意几点：
+
+第一，react首次渲染和之后的每次渲染都会调用一遍传给useEffect的函数。而之前我们要用两个声明周期函数来分别表示首次渲染（componentDidMount），和之后的更新导致的重新渲染（componentDidUpdate）。
+第二，useEffect中定义的副作用函数的执行不会阻碍浏览器更新视图，也就是说这些函数是异步执行的，而之前的componentDidMount或componentDidUpdate中的代码则是同步执行的。这种安排对大多数副作用说都是合理的，但有的情况除外，比如我们有时候需要先根据DOM计算出某个元素的尺寸再重新渲染，这时候我们希望这次重新渲染是同步发生的，也就是说它会在浏览器真的去绘制这个页面前发生。
+
+#### useEffect怎么解绑一些副作用
+
+这种场景很常见，当我们在componentDidMount里添加了一个注册，我们得马上在componentWillUnmount中，也就是组件被注销之前清除掉我们添加的注册，否则内存泄漏的问题就出现了。
+
+怎么清除呢？让我们传给useEffect的副作用函数返回一个新的函数即可。这个新的函数将会在组件下一次重新渲染之后执行。这种模式在一些pubsub模式的实现中很常见。看下面的例子：
+
+```()
+import { useState, useEffect } from 'react';
+
+function FriendStatus(props) {
+  const [isOnline, setIsOnline] = useState(null);
+
+  function handleStatusChange(status) {
+    setIsOnline(status.isOnline);
+  }
+
+  useEffect(() => {
+    ChatAPI.subscribeToFriendStatus(props.friend.id, handleStatusChange);
+    // 一定注意下这个顺序：告诉react在下次重新渲染组件之后，同时是下次调用ChatAPI.subscribeToFriendStatus之前执行cleanup
+    return function cleanup() {
+      ChatAPI.unsubscribeFromFriendStatus(props.friend.id, handleStatusChange);
+    };
+  });
+
+  if (isOnline === null) {
+    return 'Loading...';
+  }
+  return isOnline ? 'Online' : 'Offline';
+}
+```
+
+这里有一个点需要重视！这种解绑的模式跟componentWillUnmount不一样。componentWillUnmount只会在组件被销毁前执行一次而已，而useEffect里的函数，每次组件渲染后都会执行一遍，包括副作用函数返回的这个清理函数也会重新执行一遍。所以我们一起来看一下下面这个问题。
+
+#### 为什么要让副作用函数每次组件更新都执行一遍
+
+但useEffect则没这个问题，因为它在每次组件更新后都会重新执行一遍。所以代码的执行顺序是这样的：
+
+```()
+1.页面首次渲染
+2.替friend.id=1的朋友注册
+
+3.突然friend.id变成了2
+4.页面重新渲染
+5.清除friend.id=1的绑定
+6.替friend.id=2的朋友注册
+```
+
+#### 怎么跳过一些不必要的副作用函数
+
+每次重新渲染都要执行一遍这些副作用函数，显然是不经济的。怎么跳过一些不必要的计算呢？我们只需要给useEffect传第二个参数即可。用第二个参数来告诉react只有当这个参数的值发生改变时，才执行我们传的副作用函数（第一个参数）。
+
+```()
+useEffect(() => {
+  document.title = `You clicked ${count} times`;
+}, [count]); // 只有当count的值发生变化时，才会重新执行`document.title`这一句
+```
+
+当我们第二个参数传一个空数组[]时，其实就相当于只在首次渲染的时候执行。也就是componentDidMount加componentWillUnmount的模式。不过这种用法可能带来bug，少用。
+
+### 还有哪些自带的Effect Hooks
+
+除了上文重点介绍的useState和useEffect，react还给我们提供来很多有用的hooks：
+
+* useContext
+* useReducer
+* useCallback
+* useMemo
+* useRef
+* useImperativeMethods
+* useMutationEffect
+* useLayoutEffect
+
+### 怎么写自定义的Effect Hooks
+
+比如我们可以把上面写的FriendStatus组件中判断朋友是否在线的功能抽出来，新建一个useFriendStatus的hook专门用来判断某个id是否在线。
+
+```()
+import { useState, useEffect } from 'react';
+
+function useFriendStatus(friendID) {
+  const [isOnline, setIsOnline] = useState(null);
+
+  function handleStatusChange(status) {
+    setIsOnline(status.isOnline);
+  }
+
+  useEffect(() => {
+    ChatAPI.subscribeToFriendStatus(friendID, handleStatusChange);
+    return () => {
+      ChatAPI.unsubscribeFromFriendStatus(friendID, handleStatusChange);
+    };
+  });
+
+  return isOnline;
+}
+```
+
+这时候FriendStatus组件就可以简写为：
+
+```()
+function FriendStatus(props) {
+  const isOnline = useFriendStatus(props.friend.id);
+
+  if (isOnline === null) {
+    return 'Loading...';
+  }
+  return isOnline ? 'Online' : 'Offline';
+}
+```
+
+假如这个时候我们又有一个朋友列表也需要显示是否在线的信息：
+
+```()
+function FriendListItem(props) {
+  const isOnline = useFriendStatus(props.friend.id);
+
+  return (
+    <li style={{ color: isOnline ? 'green' : 'black' }}>
+      {props.friend.name}
+    </li>
+  );
+}
+```
+
+## Hook的执行机制
+
+### 第一个：函数调用完之后会把函数中的变量清除，但ReactHook是怎么复用状态呢
+
+React 保持对当先渲染中的组件的追踪，每个组件内部都有一个「记忆单元格」列表。它们只不过是我们用来存储一些数据的 JavaScript 对象。当你用 useState() 调用一个Hook的时候，它会读取当前的单元格（或在首次渲染时将其初始化），然后把指针移动到下一个。这就是多个 useState() 调用会得到各自独立的本地 state 的原因。
+
+之所以不叫createState，而是叫useState，因为 state 只在组件首次渲染的时候被创建。在下一次重新渲染时，useState 返回给我们当前的 state。
+
+```()
+    const [count, setCount] = useState(1);
+    setCount(2);
+    //第一次渲染
+        //创建state，
+        //设置count的值为2
+    //第二次渲染
+        //useState(1)中的参数忽略，并把count赋予2
+```
+
+### React是怎么区分多次调用的hooks的呢，怎么知道这个hook就是这个作用呢
+
+React 靠的是 Hook 调用的顺序。在一个函数组件中每次调用Hooks的顺序是相同。借助官网的一个例子：
+
+```()
+// ------------
+// 首次渲染
+// ------------
+useState('Mary')           // 1. 使用 'Mary' 初始化变量名为 name 的 state
+useEffect(persistForm)     // 2. 添加 effect 以保存 form 操作
+useState('Poppins')        // 3. 使用 'Poppins' 初始化变量名为 surname 的 state
+useEffect(updateTitle)     // 4. 添加 effect 以更新标题
+
+// -------------
+// 二次渲染
+// -------------
+useState('Mary')           // 1. 读取变量名为 name 的 state（参数被忽略）
+useEffect(persistForm)     // 2. 替换保存 form 的 effect
+useState('Poppins')        // 3. 读取变量名为 surname 的 state（参数被忽略）
+useEffect(updateTitle)     // 4. 替换更新标题的 effect
+
+// ...
+
+```
+
+在上面hook规则的时候提到Hook一定要写在函数组件的对外层，不要写在判断、循环中，正是因为要保证Hook的调用顺序相同。
+
+### 自定义Hook
+
+自定义hooks可以说成是一种约定而不是功能。当一个函数以use开头并且在函数内部调用其他hooks，那么这个函数就可以成为自定义hooks，比如说useSomething。
+自定义Hooks可以封装状态，能够更好的实现状态共享。
+我们来封装一个数字加减的Hook
+
+```()
+const useCount = (num) => {
+    let [count, setCount] = useState(num);
+    return [count,()=>setCount(count + 1), () => setCount(count - 1)]
+};
+
+```
+
+这个自定义Hook内部使用useState定义一个状态，返回一个数组，数组中有状态的值、状态++的函数，状态--的函数。
+
+```()
+const CustomComp = () => {
+    let [count, addCount, redCount] = useCount(1);
+
+    return (
+        <>
+            <h1>{count}</h1>
+            <button onClick={addCount}> + </button>
+            <button onClick={redCount}> - </button>
+        </>
+    )
+}
+```
