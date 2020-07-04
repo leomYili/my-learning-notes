@@ -18,6 +18,7 @@
     - [什么是闭包](#什么是闭包)
     - [为什么需要闭包呢](#为什么需要闭包呢)
     - [特点](#特点)
+  - [箭头函数与普通函数的区别](#箭头函数与普通函数的区别)
   - [javaScript函数参数传值的方式](#javascript函数参数传值的方式)
   - [http协议](#http协议)
   - [特点](#特点-1)
@@ -33,7 +34,10 @@
   - [惰性载入函数](#惰性载入函数)
   - [在函数被调用时再处理函数](#在函数被调用时再处理函数)
   - [在声明函数时就指定适当的函数](#在声明函数时就指定适当的函数)
+  - [for in 与 for of 区别](#for-in-与-for-of-区别)
   - [call，apply，bind](#callapplybind)
+    - [手动实现一个bind](#手动实现一个bind)
+    - [手动实现一个call和apply](#手动实现一个call和apply)
   - [undefined和void 0](#undefined和void-0)
   - [web状态码](#web状态码)
   - [原型及原型链](#原型及原型链)
@@ -50,6 +54,7 @@
     - [原型链式继承（借用原型链实现继承）](#原型链式继承借用原型链实现继承)
     - [组合式继承](#组合式继承)
     - [组合式继承优化](#组合式继承优化)
+    - [寄生式继承](#寄生式继承)
     - [ES6中继承](#es6中继承)
   - [new 一个对象具体做了什么](#new-一个对象具体做了什么)
   - [XMLHttpRequest](#xmlhttprequest)
@@ -99,6 +104,14 @@
       - [相同点](#相同点)
       - [不同点](#不同点)
       - [结](#结)
+  - [React Hook 和 Vue Hook 对比](#react-hook-和-vue-hook-对比)
+  - [Vue2.0和Vue3.0的差异](#vue20和vue30的差异)
+  - [amd，cmd，es6 module之间的区别](#amdcmdes6-module之间的区别)
+    - [AMD](#amd)
+    - [RequireJS的特点](#requirejs的特点)
+    - [CMD](#cmd)
+    - [CommonJS](#commonjs)
+    - [ES6 Module](#es6-module)
 
 ## js的基本类型
 
@@ -241,6 +254,16 @@ property 也是转为 js 对象，但是转化的过程中会对 value 做一些
 
 * 占用更多内存
 * 不容易被释放
+
+## 箭头函数与普通函数的区别
+
+1、没有自己的this、super、arguments和new.target绑定。
+2、不能使用new来调用。
+3、没有原型对象。
+4、不可以改变this的绑定。
+5、形参名称不能重复。
+箭头函数中没有this绑定，必须通过查找作用域链来决定其值。
+如果箭头函数被非箭头函数包含，则this绑定的是最近一层非箭头函数的this，否则this的值则被设置为全局对象。
 
 ## javaScript函数参数传值的方式
 
@@ -412,11 +435,128 @@ var demo = (function(){
 })();
 ```
 
+## for in 与 for of 区别
+
+简单总结就是，for in遍历的是数组的索引（即键名），而for of遍历的是数组元素值。
+
+for-in总是得到对象的key或数组、字符串的下标。
+
+for-of总是得到对象的value或数组、字符串的值，另外还可以用于遍历Map和Set。
+
 ## call，apply，bind
 
 唯一区别是apply接受的是数组参数，call接受的是连续参数。
 bind是以call的形式传参的，但是bind与call、apply最大的区别就是bind绑定this指向并传参后仍然为一个函数，并没有去调用，而call与apply是直接调用函数
 不要忽略其最基本的调用函数的作用
+
+### 手动实现一个bind
+
+```()
+// 第三版 实现new调用
+Function.prototype.bindFn = function bind(thisArg){
+    if(typeof this !== 'function'){
+        throw new TypeError(this + ' must be a function');
+    }
+    // 存储调用bind的函数本身
+    var self = this;
+    // 去除thisArg的其他参数 转成数组
+    var args = [].slice.call(arguments, 1);
+    var bound = function(){
+        // bind返回的函数 的参数转成数组
+        var boundArgs = [].slice.call(arguments);
+        var finalArgs = args.concat(boundArgs);
+        // new 调用时，其实this instanceof bound判断也不是很准确。es6 new.target就是解决这一问题的。
+        if(this instanceof bound){
+            // 这里是实现上文描述的 new 的第 1, 2, 4 步
+            // 1.创建一个全新的对象
+            // 2.并且执行[[Prototype]]链接
+            // 4.通过`new`创建的每个对象将最终被`[[Prototype]]`链接到这个函数的`prototype`对象上。
+            // self可能是ES6的箭头函数，没有prototype，所以就没必要再指向做prototype操作。
+            if(self.prototype){
+                // ES5 提供的方案 Object.create()
+                // bound.prototype = Object.create(self.prototype);
+                // 但 既然是模拟ES5的bind，那浏览器也基本没有实现Object.create()
+                // 所以采用 MDN ployfill方案 https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Object/create
+                function Empty(){}
+                Empty.prototype = self.prototype;
+                bound.prototype = new Empty();
+            }
+            // 这里是实现上文描述的 new 的第 3 步
+            // 3.生成的新对象会绑定到函数调用的`this`。
+            var result = self.apply(this, finalArgs);
+            // 这里是实现上文描述的 new 的第 5 步
+            // 5.如果函数没有返回对象类型`Object`(包含`Functoin`, `Array`, `Date`, `RegExg`, `Error`)，
+            // 那么`new`表达式中的函数调用会自动返回这个新的对象。
+            var isObject = typeof result === 'object' && result !== null;
+            var isFunction = typeof result === 'function';
+            if(isObject || isFunction){
+                return result;
+            }
+            return this;
+        }
+        else{
+            // apply修改this指向，把两个函数的参数合并传给self函数，并执行self函数，返回执行结果
+            return self.apply(thisArg, finalArgs);
+        }
+    };
+    return bound;
+}
+```
+
+### 手动实现一个call和apply
+
+```()
+// 最终版版 删除注释版，详细注释看文章
+// 浏览器环境 非严格模式
+function getGlobalObject(){
+    return this;
+}
+function generateFunctionCode(argsArrayLength){
+    var code = 'return arguments[0][arguments[1]](';
+    for(var i = 0; i < argsArrayLength; i++){
+        if(i > 0){
+            code += ',';
+        }
+        code += 'arguments[2][' + i + ']';
+    }
+    code += ')';
+    return code;
+}
+Function.prototype.applyFn = function apply(thisArg, argsArray){
+    if(typeof this !== 'function'){
+        throw new TypeError(this + ' is not a function');
+    }
+    if(typeof argsArray === 'undefined' || argsArray === null){
+        argsArray = [];
+    }
+    if(argsArray !== new Object(argsArray)){
+        throw new TypeError('CreateListFromArrayLike called on non-object');
+    }
+    if(typeof thisArg === 'undefined' || thisArg === null){
+        thisArg = getGlobalObject();
+    }
+    thisArg = new Object(thisArg);
+    var __fn = '__' + new Date().getTime();
+    var originalVal = thisArg[__fn];
+    var hasOriginalVal = thisArg.hasOwnProperty(__fn);
+    thisArg[__fn] = this;
+    var code = generateFunctionCode(argsArray.length);
+    var result = (new Function(code))(thisArg, __fn, argsArray);
+    delete thisArg[__fn];
+    if(hasOriginalVal){
+        thisArg[__fn] = originalVal;
+    }
+    return result;
+};
+Function.prototype.callFn = function call(thisArg){
+    var argsArray = [];
+    var argumentsLength = arguments.length;
+    for(var i = 0; i < argumentsLength - 1; i++){
+        argsArray[i] = arguments[i + 1];
+    }
+    return this.applyFn(thisArg, argsArray);
+}
+```
 
 ## undefined和void 0
 
@@ -556,6 +696,20 @@ function Child4(){
 Child4.prototype = Object.create(Parent4.prototype)；
 Child4.prototype.constructor = Child4;
 ```
+
+### 寄生式继承
+
+function _inherits(Child, Parent){
+    // Object.create
+    Child.prototype = Object.create(Parent.prototype);
+    // __proto__
+    // Child.prototype.__proto__ = Parent.prototype;
+    Child.prototype.constructor = Child;
+    // ES6
+    // Object.setPrototypeOf(Child, Parent);
+    // __proto__
+    Child.__proto__ = Parent;
+}
 
 ### ES6中继承
 
@@ -914,7 +1068,7 @@ instanceof
 
 查看对象B的prototype指向的对象是否在对象A的[[prototype]]链上。如果在，则返回true,如果不在则返回false。不过有一个特殊的情况，当对象B的prototype为null将会报错(类似于空指针异常)
 
-```
+```()
 function instance_of(L, R) {//L 表示左表达式，R 表示右表达式
  var O = R.prototype;// 取 R 的显示原型
  L = L.__proto__;// 取 L 的隐式原型
@@ -1388,3 +1542,281 @@ exam(2, 8, 9, 10, 3);
 #### 结
 
 如果不清楚什么时候用interface/type，能用 interface 实现，就用 interface , 如果不能就用 type
+
+## React Hook 和 Vue Hook 对比
+
+其实 React Hook 的限制非常多，比如官方文档中就专门有一个章节介绍它的限制：
+
+不要在循环，条件或嵌套函数中调用
+
+1. Hook确保总是在你的 React 函数的最顶层调用他们。
+2. 遵守这条规则，你就能确保 Hook 在每一次渲染中都按照同样的顺序被调用。这让 React 能够在多次的 useState 和 useEffect 调用之间保持 hook 状态的正确。
+
+而 Vue 带来的不同在于：
+
+1. 与 React Hooks 相同级别的逻辑组合功能，但有一些重要的区别。 与 React Hook 不同，setup 函数仅被调用一次，这在性能上比较占优。
+2. 对调用顺序没什么要求，每次渲染中不会反复调用 Hook 函数，产生的的 GC 压力较小。 不必考虑几乎总是需要 useCallback 的问题，以防止传递函数prop给子组件的引用变化，导致无必要的重新渲染。
+3. React Hook 有臭名昭著的闭包陷阱问题（甚至成了一道热门面试题，omg），如果用户忘记传递正确的依赖项数组，useEffect 和 useMemo 可能会捕获过时的变量，这不受此问题的影响。Vue 的自动依赖关系跟踪确保观察者和计算值始终正确无误。
+4. 不得不提一句，React Hook 里的「依赖」是需要你去手动声明的，而且官方提供了一个 eslint 插件，这个插件虽然大部分时候挺有用的，但是有时候也特别烦人，需要你手动加一行丑陋的注释去关闭它。
+
+## Vue2.0和Vue3.0的差异
+
+Vue2.0
+
+1. 基于Object.defineProperty，监听数组性能有问题，需要重新定义数组的原型来达到响应式。
+2. Object.defineProperty 无法检测到对象属性的添加和删除。
+3. 由于Vue会在初始化实例时对属性执行getter/setter转化，所有属性必须在data对象上存在才能让Vue将它转换为响应式。
+4. 深度监听需要一次性递归，对性能影响比较大。
+
+```()
+function defineReactive(target, key, value) {
+   //深度监听
+   observer(value);
+
+   Object.defineProperty(target, key, {
+     get() {
+       return value;
+     },
+     set(newValue) {
+       //深度监听
+       observer(value);
+       if (newValue !== value) {
+         value = newValue;
+
+         updateView();
+       }
+     }
+   });
+ }
+
+ function observer(target) {
+   if (typeof target !== "object" || target === null) {
+     return target;
+   }
+
+   if (Array.isArray(target)) {
+     target.__proto__ = arrProto;
+   }
+
+   for (let key in target) {
+     defineReactive(target, key, target[key]);
+   }
+ }
+
+ // 重新定义数组原型
+ const oldAddrayProperty = Array.prototype;
+ const arrProto = Object.create(oldAddrayProperty);
+ ["push", "pop", "shift", "unshift", "spluce"].forEach(
+   methodName =>
+     (arrProto[methodName] = function() {
+       updateView();
+       oldAddrayProperty[methodName].call(this, ...arguments);
+     })
+ );
+
+ // 视图更新
+  function updateView() {
+   console.log("视图更新");
+ }
+
+ // 声明要响应式的对象
+ const data = {
+   name: "zhangsan",
+   age: 20,
+   info: {
+     address: "北京" // 需要深度监听
+   },
+   nums: [10, 20, 30]
+ };
+
+ // 执行响应式
+ observer(data);
+```
+
+Vue3.0
+
+基于Proxy和Reflect，可以原生监听数组，可以监听对象属性的添加和删除。
+不需要一次性遍历data的属性，可以显著提高性能。
+因为Proxy是ES6新增的属性，有些浏览器还不支持,只能兼容到IE11。
+
+```()
+const proxyData = new Proxy(data, {
+   get(target,key,receive){
+     // 只处理本身(非原型)的属性
+     const ownKeys = Reflect.ownKeys(target)
+     if(ownKeys.includes(key)){
+       console.log('get',key) // 监听
+     }
+     const result = Reflect.get(target,key,receive)
+     return result
+   },
+   set(target, key, val, reveive){
+     // 重复的数据，不处理
+     const oldVal = target[key]
+     if(val == oldVal){
+       return true
+     }
+     const result = Reflect.set(target, key, val,reveive)
+     console.log('set', key, val)
+     return result
+   },
+   deleteProperty(target, key){
+     const result = Reflect.deleteProperty(target,key)
+     console.log('delete property', key)
+     console.log('result',result)
+     return result
+   }
+ })
+
+  // 声明要响应式的对象,Proxy会自动代理
+ const data = {
+   name: "zhangsan",
+   age: 20,
+   info: {
+     address: "北京" // 需要深度监听
+   },
+   nums: [10, 20, 30]
+ };
+```
+
+## amd，cmd，es6 module之间的区别
+
+### AMD
+
+AMD一开始是CommonJS规范中的一个草案，全称是Asynchronous Module Definition，即异步模块加载机制。后来由该草案的作者以RequireJS实现了AMD规范，所以一般说AMD也是指RequireJS。
+
+RequireJS的基本用法
+通过define来定义一个模块，使用require可以导入定义的模块。
+
+```()
+//a.js
+//define可以传入三个参数，分别是字符串-模块名、数组-依赖模块、函数-回调函数
+define(function(){
+    return 1;
+})
+
+// b.js
+//数组中声明需要加载的模块，可以是模块名、js文件路径
+require(['a'], function(a){
+    console.log(a);// 1
+});
+```
+
+### RequireJS的特点
+
+对于依赖的模块，AMD推崇依赖前置，提前执行。也就是说，在define方法里传入的依赖模块(数组)，会在一开始就下载并执行。
+
+### CMD
+
+CMD是SeaJS在推广过程中生产的对模块定义的规范，在Web浏览器端的模块加载器中，SeaJS与RequireJS并称，SeaJS作者为阿里的玉伯。
+
+SeaJS的基本用法
+
+```()
+//a.js
+/*
+* define 接受 factory 参数，factory 可以是一个函数，也可以是一个对象或字符串，
+* factory 为对象、字符串时，表示模块的接口就是该对象、字符串。
+* define 也可以接受两个以上参数。字符串 id 表示模块标识，数组 deps 是模块依赖.
+*/
+define(function(require, exports, module) {
+  var $ = require('jquery');
+
+  exports.setColor = function() {
+    $('body').css('color','#333');
+  };
+});
+
+//b.js
+//数组中声明需要加载的模块，可以是模块名、js文件路径
+seajs.use(['a'], function(a) {
+  $('#el').click(a.setColor);
+});
+```
+
+SeaJS的特点
+
+对于依赖的模块，CMD推崇依赖就近，延迟执行。也就是说，只有到require时依赖模块才执行。
+
+### CommonJS
+
+CommonJS规范为CommonJS小组所提出，目的是弥补JavaScript在服务器端缺少模块化机制，NodeJS、webpack都是基于该规范来实现的。
+
+CommonJS的基本用法
+
+```()
+//a.js
+module.exports = function () {
+  console.log("hello world")
+}
+
+//b.js
+var a = require('./a');
+
+a();//"hello world"
+
+//或者
+
+//a2.js
+exports.num = 1;
+exports.obj = {xx: 2};
+
+//b2.js
+var a2 = require('./a2');
+
+console.log(a2);//{ num: 1, obj: { xx: 2 } }
+```
+
+CommonJS的特点
+
+* 所有代码都运行在模块作用域，不会污染全局作用域；
+* 模块是同步加载的，即只有加载完成，才能执行后面的操作；
+* 模块在首次执行后就会缓存，再次加载只返回缓存结果，如果想要再次执行，可清除缓存；
+* CommonJS输出是值的拷贝(即，require返回的值是被输出的值的拷贝，模块内部的变化也不会影响这个值)。
+
+### ES6 Module
+
+ES6 Module是ES6中规定的模块体系，相比上面提到的规范， ES6 Module有更多的优势，有望成为浏览器和服务器通用的模块解决方案。
+
+```()
+//a.js
+var name = 'lin';
+var age = 13;
+var job = 'ninja';
+
+export { name, age, job};
+
+//b.js
+import { name, age, job} from './a.js';
+
+console.log(name, age, job);// lin 13 ninja
+
+//或者
+
+//a2.js
+export default function () {
+  console.log('default ');
+}
+
+//b2.js
+import customName from './a2.js';
+customName(); // 'default'
+```
+
+ES6 Module的特点(对比CommonJS)
+
+* CommonJS模块是运行时加载，ES6 Module是编译时输出接口；
+* CommonJS加载的是整个模块，将所有的接口全部加载进来，ES6 Module可以单独加载其中的某个接口；
+* CommonJS输出是值的拷贝，ES6 Module输出的是值的引用，被输出模块的内部的改变会影响引用的改变；
+* CommonJS this指向当前模块，ES6 Module this指向undefined;
+
+目前浏览器对ES6 Module兼容还不太好，我们平时在webpack中使用的export/import，会被打包为exports/require。
+
+必须了解 ES6 模块与 CommonJS 模块完全不同。
+
+它们有两个重大差异。
+
+CommonJS 模块输出的是一个值的拷贝，ES6 模块输出的是值的引用。
+CommonJS 模块是运行时加载，ES6 模块是编译时输出接口。
+第二个差异是因为 CommonJS 加载的是一个对象（即module.exports属性），该对象只有在脚本运行完才会生成。而 ES6 模块不是对象，它的对外接口只是一种静态定义，在代码静态解析阶段就会生成。
+
