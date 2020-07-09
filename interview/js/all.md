@@ -104,6 +104,7 @@
       - [相同点](#相同点)
       - [不同点](#不同点)
       - [结](#结)
+  - [React的setState的更新模式](#react的setstate的更新模式)
   - [React Hook 和 Vue Hook 对比](#react-hook-和-vue-hook-对比)
   - [Vue2.0和Vue3.0的差异](#vue20和vue30的差异)
   - [amd，cmd，es6 module之间的区别](#amdcmdes6-module之间的区别)
@@ -1542,6 +1543,15 @@ exam(2, 8, 9, 10, 3);
 #### 结
 
 如果不清楚什么时候用interface/type，能用 interface 实现，就用 interface , 如果不能就用 type
+
+## React的setState的更新模式
+
+* setState在生命周期函数和合成函数中都是异步更新。
+* setState在steTimeout、原生事件和async函数中都是同步更新。每次更新不代表都会触发render，如果render内容与newState有关联，则会触发，否则即便setState多次也不会render
+* 如果newState内容与render有依赖关系，就不建议同步更新，因为每次render都会完整的执行一次批量更新流程(只是dirtyComponets长度为1，stateQueue也只有该组件的newState)，调用一次diff算法，这样会影响React性能。
+* 如果没有必须同步渲染的理由，不建议使用同步，会影响react渲染性能
+
+链接：<https://zhuanlan.zhihu.com/p/82089614>
 
 ## React Hook 和 Vue Hook 对比
 
