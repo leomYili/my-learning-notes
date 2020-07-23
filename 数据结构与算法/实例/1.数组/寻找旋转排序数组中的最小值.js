@@ -17,6 +17,8 @@ var findMin = function(nums){
 
 /**
  * 二分法，对数组取中间数，然后依次与数组当前最后一位（相等时往前移位）进行比较，得到最小值下标
+ * 第一次更新
+ * 第二次更新
  * @param {*} nums 
  */
 var findMin = function(nums){
