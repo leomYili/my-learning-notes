@@ -17,7 +17,7 @@ function isObject(obj) {
  * @param {*} source
  * @param {*} hash
  */
-function cloneDeep1(source, hash = new WeakMap()) {
+export function cloneDeep1(source, hash = new WeakMap()): any {
     if (!isObject(source)) return source;
     if (hash.has(source)) return hash.get(source); // 新增代码，查哈希表
 
@@ -40,7 +40,7 @@ function cloneDeep1(source, hash = new WeakMap()) {
 /**
  * 循环方式
  */
-function cloneDeep2(x) {
+export function cloneDeep2(x) {
     const root = {};
 
     const uniqueList = []; // 用来去重
@@ -111,4 +111,3 @@ function find(arr, key) {
     return null;
 }
 
-export default { cloneDeep1, cloneDeep2 };

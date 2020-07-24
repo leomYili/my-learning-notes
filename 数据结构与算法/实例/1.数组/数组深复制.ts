@@ -4,12 +4,12 @@
  * 限制：js中数组可保存函数以及对象，这里需要考虑到对象的深拷贝，函数也是
  */
 
-import { cloneDeep1, cloneDeep2 } from "../深拷贝简单.ts";
+import { cloneDeep1, cloneDeep2 } from "../深拷贝简单";
 
-function arrCopy(a, b) {
+function arrCopy(a: [], b = []) {
     let newArr = [];
 
-    if (typeof a.length === undefined || a.length === 0) {
+    if ((typeof a.length === undefined || a.length === 0) && (typeof b.length === undefined || b.length === 0)) {
         return newArr;
     }
 
