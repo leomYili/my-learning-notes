@@ -6,6 +6,10 @@
 
 > 本文所涉及到的demo均放在github <https://github.com/leomYili/formilyDemo> 上.
 
+> 特点:解决复杂表单问题,跨端,扩展度较好,动态渲染,视图逻辑分离,支持可视化搭建配置,高性能(联动)
+
+> 缺点:学习成本较高,包体积过大,最好根据需求进行选择,需要二次封装
+
 ## 本质
 
 构造了一个 **Observable Form Graph**
