@@ -259,6 +259,10 @@ export default () => {
 
 ![7](./img/7.png)
 
+## 补充说明
+
+最近按照formily的相关API使用 `rxJS` 自己做了一版,感兴趣的可以访问 <https://github.com/leomYili/formilyDemo/tree/master/src/views/rxjs> 来对比参考.
+
 ## 结语
 
 针对底层代码再次做了下阅读,发现还是有不少东西是很有用的,有些api只有在需要扩展以及需要定制化改造的场景下才会用的到.

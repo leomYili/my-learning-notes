@@ -58,3 +58,14 @@ var merge = function (A, m, B, n) {
         n--;
     }
 };
+
+var merge = (A,m,B,n) => {
+    while(m > 0 && n > 0){
+        A[m+n - 1 ] = A[m-1] > B[n-1] ? A[m-- -1] : B[n-- -1];
+    }
+
+    while(n > 0){
+        A[n-1] = B[n-1];
+        n--;
+    }
+}
