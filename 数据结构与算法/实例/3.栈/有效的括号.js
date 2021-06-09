@@ -20,7 +20,7 @@ var isValid = function(s) {
             // 判断是否是左侧括号，直接加入即可
             stack.push(s[i]);
         }else if(s[i] !== map[stack.pop()]){
-            // 这里做判断，因为这里都是右侧括号，所以只需与之前的栈做比较就可以
+            // 这里做判断，因为这里判断时都会是右侧括号，所以只需与之前的栈做比较就可以
 
             return false;
         }
