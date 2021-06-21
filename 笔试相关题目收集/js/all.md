@@ -57,7 +57,7 @@
     - [寄生式继承](#寄生式继承)
     - [ES6中继承](#es6中继承)
   - [new 一个对象具体做了什么](#new-一个对象具体做了什么)
-  - [XMLHttpRequest](#xmlhttprequest)
+  - [XMLHttpRequest-模拟一个ajax](#xmlhttprequest-模拟一个ajax)
   - [匿名函数](#匿名函数)
   - [JS的宿主对象和原生对象](#js的宿主对象和原生对象)
   - [document load和document DOMContentLoaded两个事件的区别](#document-load和document-domcontentloaded两个事件的区别)
@@ -113,6 +113,7 @@
     - [CMD](#cmd)
     - [CommonJS](#commonjs)
     - [ES6 Module](#es6-module)
+  - [尾语](#尾语)
 
 ## js的基本类型
 
@@ -751,7 +752,7 @@ var args = Array.prototype.slice.call(arguments,1);
        当这句执行完之后，obj便产生了属性name并赋值为"cat"。【关于JS中call的用法请阅读：JS的call和apply】
 （4）考察第3步返回的返回值，如果无返回值或者返回一个非对象值，则将obj返回作为新对象；否则会将返回值作为新对象返回。
 
-## XMLHttpRequest
+## XMLHttpRequest-模拟一个ajax
 
 <a href="">ajax原生对象</a>
 
@@ -762,6 +763,7 @@ function ajax(options){
         "dataType": "string",
         "data":{},
         "url": '',
+        "headers": {},
         "async": true,
         "success":function(){},
         "error":function(){}
@@ -775,9 +777,16 @@ function ajax(options){
 
     var xhr = new XMLHttpRequest();
 
-    xhr.open(this.opts.type,this.opts.url,this.opts.async);
-
-    xhr.send(null);
+    // 举例
+    if(options.type == 'GET'){
+        xhr.open('GET',options.url + '?' + params,true)
+        xhr.setRequestHeader(this.opts.headers)
+        xhr.send(null)
+    }else if(options.type == 'POST'){
+        xhr.open('POST',options.url,true)
+        xhr.setRequestHeader(this.opts.headers)
+        xhr.send(params)
+    }
 
     xhr.onreadystatechange=function(e){
         if(xhr.readystate === 4){

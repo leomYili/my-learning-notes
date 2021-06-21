@@ -23,7 +23,7 @@ function cloneDeep3(source) {
   for (var key in source) {
     if (Object.prototype.hasOwnProperty.call(source, key)) {
       if (isObject(source[key])) {
-        target[key] = cloneDeep2(source[key]); // 注意这里
+        target[key] = cloneDeep3(source[key]); // 注意这里
       } else {
         target[key] = source[key];
       }

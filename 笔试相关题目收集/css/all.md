@@ -1,6 +1,7 @@
 # 知识点汇总
 
 - [知识点汇总](#知识点汇总)
+  - [css优先级计算](#css优先级计算)
   - [盒模型](#盒模型)
     - [css 外边距合并（叠加）](#css-外边距合并叠加)
     - [box-sizing](#box-sizing)
@@ -13,6 +14,8 @@
   - [css 如何实现水平居中和垂直居中](#css-如何实现水平居中和垂直居中)
   - [css3的flex相关介绍](#css3的flex相关介绍)
     - [flex-item的属性](#flex-item的属性)
+      - [flex应用思考](#flex应用思考)
+        - [深入理解flex-basis:auto](#深入理解flex-basisauto)
     - [兼容性](#兼容性)
   - [css的position](#css的position)
   - [绝对定位和相对定位，元素浮动后的display值](#绝对定位和相对定位元素浮动后的display值)
@@ -53,6 +56,19 @@
     - [区别](#区别)
     - [CSS 3 如何实现旋转图片（transform: rotate）](#css-3-如何实现旋转图片transform-rotate)
     - [CSS雪碧图](#css雪碧图)
+
+## css优先级计算
+
+CSS优先级由0,0,0,0这样的特殊值来表示，计算规则是左大右小的，举个例子：1,0,0,0 > 0,99,99,99。特殊值越大，优先级越高。
+
+等级 | 内联选择器 | ID选择器 | 类选择器/属性选择器/伪类 | 元素选择器
+------- | ------- | ------- | ------- | -------
+示例 | <span style="color:red;"></span> | #sp{color:red} | .sp{color:red} [type="text"]{color:red} :nth-of-type(1){color:red} | span{color:red}
+优先级 | 1-0-0-0 | 0-1-0-0 | 0-0-1-0 | 0-0-0-1
+
+!important 优先级是最高的 1-0-0-0-0,慎用
+
+在Flex布局中，子项设置width是没有直接效果的。
 
 ## 盒模型
 
@@ -212,7 +228,8 @@ Flex 是 Flexible Box 的缩写，意为"弹性布局"
 容器默认存在两根轴：水平的主轴（main axis）和垂直的交叉轴（cross axis）。主轴的开始位置（与边框的交叉点）叫做main start，结束位置叫做main end；交叉轴的开始位置叫做cross start，结束位置叫做cross end。
 项目默认沿主轴排列。单个项目占据的主轴空间叫做main size，占据的交叉轴空间叫做cross size。
 
-* flex-direction:属性决定主轴的方向（即项目的排列方向）。eg:row | row-reverse | column | column-reverse;
+* flex-direction:属性决定主轴的方向（即项目的排列方向）。eg:column-reverse | column | row | row-reverse;
+    ![1](./../img/css01.png)
 * flex-wrap:属性定义，如果一条轴线排不下，如何换行。eg:nowrap | wrap | wrap-reverse;
 * flex-flow:属性是flex-direction属性和flex-wrap属性的简写形式，默认值为row nowrap.eg: `<flex-direction> || <flex-wrap>`;
 * justify-content:属性定义了项目在主轴上的对齐方式。eg:flex-start | flex-end | center | space-between | space-around;
@@ -225,8 +242,48 @@ Flex 是 Flexible Box 的缩写，意为"弹性布局"
 * flex-grow:属性定义项目的放大比例，默认为0，即如果存在剩余空间，也不放大。
 * flex-shrink:属性定义了项目的缩小比例，默认为1，即如果空间不足，该项目将缩小。
 * flex-basis:属性定义了在分配多余空间之前，项目占据的主轴空间（main size）。浏览器根据这个属性，计算主轴是否有多余空间。它的默认值为auto，即项目的本来大小。
-* flex:属性是flex-grow, flex-shrink 和 flex-basis的简写，默认值为0 1 auto。后两个属性可选。
+* flex:属性是flex-grow, flex-shrink 和 flex-basis的简写，该属性有两个快捷值：auto (1 1 auto) 和 none (0 0 auto).后两个属性可选,初始值是initial (0 1 auto)。
 * align-self:属性允许单个项目有与其他项目不一样的对齐方式，可覆盖align-items属性。默认值为auto，表示继承父元素的align-items属性，如果没有父元素，则等同于stretch。eg:auto | flex-start | flex-end | center | baseline | stretch;
+
+#### flex应用思考
+
+在Flex布局中，一个flex子项的最终尺寸是基础尺寸、弹性增长或收缩、最大最小尺寸限制共同作用的结果。
+
+其中：
+
+* 基础尺寸由CSS flex-basis属性，width等属性以及box-sizing盒模型共同决定；
+* 弹性增长指的是flex-grow属性，弹性收缩指的是flex-shrink属性；
+* 最大最小尺寸限制指的是min-width/max-width等CSS属性，以及min-content最小内容尺寸。
+
+最终尺寸计算的优先级是：
+
+> 最大最小尺寸限制 > 弹性增长或收缩 > 基础尺寸
+
+flex-shrink 属性指定了 flex 元素的收缩规则。flex 元素仅在默认宽度之和大于容器的时候才会发生收缩，其收缩的大小是依据 flex-shrink 的值.(即如果flex-basis的值大于当前的可分配空间时,是否进行缩放[大于0],)
+
+flex-grow设置了一个flex项主尺寸的flex增长系数。它指定了flex容器中剩余空间的多少应该分配给项目（flex增长系数）。
+
+主尺寸是项的宽度或高度，这取决于flex-direction值。
+
+剩余的空间是flex容器的大小减去所有flex项的大小加起来的大小。如果所有的兄弟项目都有相同的flex-grow系数，那么所有的项目将获得相同的剩余空间，否则将根据不同的flex-grow系数定义的比例进行分配。
+
+##### 深入理解flex-basis:auto
+
+flex-basis的默认值是auto，表示自动，也就是完全根据子列表项自身尺寸渲染。
+
+自身尺寸渲染优先级如下：
+
+```()
+min-width > || max-width > width > Content Size
+```
+
+同时，在Flex布局中，flex-basis优先级是比width高的（可以理解为覆盖）。
+
+所以，flex-basis和width同时设置了具体的数值，则width属性值直接被打入冷宫，在样式表现上完全被忽略。
+
+即如果设置的flex-basis超出了原有容器的大小,则超出的部分再响应式分配,所以如果超出了min-width,表现为过长,而且在内部元素长度不够进行分配时,会根据各自的basis进行重新计算
+
+flex-basis虽然支持关键字属性,比如:content,max-content,fill;
 
 ### 兼容性
 
