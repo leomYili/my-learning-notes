@@ -16,8 +16,8 @@ var calculate = function (s) {
             sign = 1;
             i++;
         } else if (c === "(") {
-            stack.push(sum, sign);// 这里加入两个对应下面遇到“）”的时候pop两个
-            sum = 0;
+            stack.push(sum, sign);// 这里加入两个对应下面遇到“）”的时候pop两个,
+            sum = 0;// 因为上面已经存储了之前的结果,所以置为0即可
             sign = 1;
             i++;
         } else if (c === ")") {

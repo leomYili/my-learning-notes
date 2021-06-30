@@ -1,5 +1,32 @@
 # 正文
 
+- [正文](#正文)
+  - [React为什么要搞一个hooks](#react为什么要搞一个hooks)
+    - [渲染属性](#渲染属性)
+    - [高阶组件](#高阶组件)
+    - [生命周期钩子函数里的逻辑太乱了吧](#生命周期钩子函数里的逻辑太乱了吧)
+    - [classes真的太让人困惑了](#classes真的太让人困惑了)
+  - [什么是State Hooks](#什么是state-hooks)
+    - [声明一个状态变量](#声明一个状态变量)
+    - [读取状态值](#读取状态值)
+    - [更新状态](#更新状态)
+    - [假如一个组件有多个状态值怎么办](#假如一个组件有多个状态值怎么办)
+    - [react是怎么保证多个useState的相互独立的](#react是怎么保证多个usestate的相互独立的)
+    - [什么是Effect Hooks](#什么是effect-hooks)
+      - [useEffect做了什么](#useeffect做了什么)
+      - [useEffect怎么解绑一些副作用](#useeffect怎么解绑一些副作用)
+      - [为什么要让副作用函数每次组件更新都执行一遍](#为什么要让副作用函数每次组件更新都执行一遍)
+      - [怎么跳过一些不必要的副作用函数](#怎么跳过一些不必要的副作用函数)
+    - [还有哪些自带的Effect Hooks](#还有哪些自带的effect-hooks)
+    - [怎么写自定义的Effect Hooks](#怎么写自定义的effect-hooks)
+  - [Hook的执行机制](#hook的执行机制)
+    - [第一个：函数调用完之后会把函数中的变量清除，但ReactHook是怎么复用状态呢](#第一个函数调用完之后会把函数中的变量清除但reacthook是怎么复用状态呢)
+    - [React是怎么区分多次调用的hooks的呢，怎么知道这个hook就是这个作用呢](#react是怎么区分多次调用的hooks的呢怎么知道这个hook就是这个作用呢)
+    - [自定义Hook](#自定义hook)
+  - [自定义Hooks](#自定义hooks)
+    - [如何将函数抽到 useEffect 外部？](#如何将函数抽到-useeffect-外部)
+    - [为什么 useCallback 比 componentDidUpdate 更好用](#为什么-usecallback-比-componentdidupdate-更好用)
+
 ## React为什么要搞一个hooks
 
 想要复用一个有状态的组件太麻烦了！
@@ -7,6 +34,8 @@
 我们都知道react都核心思想就是，将一个页面拆成一堆独立的，可复用的组件，并且用自上而下的单向数据流的形式将这些组件串联起来。但假如你在大型的工作项目中用react，你会发现你的项目中实际上很多react组件冗长且难以复用。尤其是那些写成class的组件，它们本身包含了状态（state），所以复用这类组件就变得很麻烦。
 
 那之前，官方推荐怎么解决这个问题呢？答案是：渲染属性（Render Props）和高阶组件（Higher-Order Components）。
+
+React Hooks 要解决的问题是状态共享,是继 render-props 和 higher-order components 之后的第三种状态共享方案，不会产生 JSX 嵌套地狱问题。
 
 ### 渲染属性
 
@@ -442,3 +471,54 @@ const CustomComp = () => {
     )
 }
 ```
+
+## 自定义Hooks
+
+自定义 Hooks 允许创建自定义 Hook，只要函数名遵循以 use 开头，且返回非 JSX 元素，就是 Hooks 啦！**自定义 Hooks 内还可以调用包括内置 Hooks 在内的所有自定义 Hooks**
+
+也就是我们可以将 useEffect 写到自定义 Hook 里：
+
+```()
+function useCurrentValue(value) {
+  const ref = useRef(0);
+
+  useEffect(() => {
+    ref.current = value;
+  }, [value]);
+
+  return ref;
+}
+```
+
+这里又引出一个新的概念，就是 useEffect 的第二个参数，dependences。dependences 这个参数定义了 useEffect 的依赖，在新的渲染中，只要所有依赖项的引用都不发生变化，useEffect 就不会被执行，且当依赖项为 [] 时，useEffect 仅在初始化执行一次，后续的 Rerender 永远也不会被执行。
+
+### 如何将函数抽到 useEffect 外部？
+
+为了解决这个问题，我们要引入一个新的 Hook：useCallback，它就是解决将函数抽到 useEffect 外部的问题。
+
+我们先看 useCallback 的用法：
+
+```()
+function Counter() {
+  const [count, setCount] = useState(0);
+
+  const getFetchUrl = useCallback(() => {
+    return "https://v?query=" + count;
+  }, [count]);
+
+  useEffect(() => {
+    getFetchUrl();
+  }, [getFetchUrl]);
+
+  return <h1>{count}</h1>;
+}
+```
+
+可以看到，useCallback 也有第二个参数 - 依赖项，我们将 getFetchUrl 函数的依赖项通过 useCallback 打包到新的 getFetchUrl 函数中，那么 useEffect 就只需要依赖 getFetchUrl 这个函数，就实现了对 count 的间接依赖。
+
+换句话说，我们利用了 useCallback 将 getFetchUrl 函数抽到了 useEffect 外部。
+
+### 为什么 useCallback 比 componentDidUpdate 更好用
+
+因为依赖的是一个函数,而不是某些参数,这样可以更好的做到分离
+
