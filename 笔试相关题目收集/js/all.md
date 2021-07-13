@@ -113,6 +113,7 @@
     - [CMD](#cmd)
     - [CommonJS](#commonjs)
     - [ES6 Module](#es6-module)
+    - [export default 与 export的区别](#export-default-与-export的区别)
   - [尾语](#尾语)
 
 ## js的基本类型
@@ -1838,6 +1839,12 @@ ES6 Module的特点(对比CommonJS)
 CommonJS 模块输出的是一个值的拷贝，ES6 模块输出的是值的引用。
 CommonJS 模块是运行时加载，ES6 模块是编译时输出接口。
 第二个差异是因为 CommonJS 加载的是一个对象（即module.exports属性），该对象只有在脚本运行完才会生成。而 ES6 模块不是对象，它的对外接口只是一种静态定义，在代码静态解析阶段就会生成。
+
+### export default 与 export的区别
+
+1. export与export default均可用于导出常量、函数、文件、模块等，你可以在其它文件或模块中通过import+(常量 | 函数 | 文件 | 模块)名的方式，将其导入
+2. export、import可以有多个，export default仅有一个
+3. export导出对象需要用{ }，export default不需要{ }
 
 ## 尾语
 
