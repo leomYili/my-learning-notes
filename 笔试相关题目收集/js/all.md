@@ -1417,6 +1417,44 @@ function exam(a, b, c, d, e) {
 exam(2, 8, 9, 10, 3);
 ```
 
+## js-微前端实现沙箱的机制
+
+### iframe实现沙箱机制
+
+通过`iframe`对象，把原生浏览器对象通过`contentWindow`取出来，这个对象具有所有的属性，而且与主应用的环境隔离，利用`iframe`沙箱我们可以实现以下特性:
+
+- 全局变量隔离，如setTimeout、location、react不同版本隔离
+- 路由隔离，应用可以实现独立路由，也可以共享全局路由
+- 多实例，可以同时存在多个独立的微应用同时运行
+
+### 基于diff方式实现沙箱
+
+这里通过保存一个快照window对象，将当前window对象上的全部属性都复制到快照对象上，子应用卸载的时候将window对象修改做个diff，将不同的属性勇哥modify保存起来，再次挂载的时候再加上这些修改的属性。
+
+### 基于proxy实现单实例沙箱
+
+原理与上面的diff一致，只是用Proxy实现对对象的劫持，在沙箱修改时，关联修改window对象上的属性，在卸载时删除这些记录，在应用激活时再恢复这些记录
+这里需要注意，劫持的`fakeWindow`实际上没有被修改，只是一个空对象
+
+### 基于proxy实现的多实例沙箱
+
+这里只需要修改，把原来直接设置到window对象上的属性，设置到`fakeWindow`的实例对象上即可，且
+
+```()
+const proxy = new Proxy(Object.create({}),{
+    set: XXX
+    get: (target,name) => {
+        // 优先使用共享对象
+        if(Object.keys(context).includes(name)){
+            return context[name];
+        }
+        return target[name];
+    }
+})
+```
+
+优先使用共享对象，如果设置共享对象是window，则window修改，两个沙箱也相应可以得到值
+
 ## TypeScript
 
 ### TypeScript中的interface 与 type 有何异同
@@ -1550,7 +1588,7 @@ exam(2, 8, 9, 10, 3);
     */
     ```
 
-#### 结
+#### 总结
 
 如果不清楚什么时候用interface/type，能用 interface 实现，就用 interface , 如果不能就用 type
 
