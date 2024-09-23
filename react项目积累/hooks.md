@@ -17,6 +17,15 @@
       - [useEffect怎么解绑一些副作用](#useeffect怎么解绑一些副作用)
       - [为什么要让副作用函数每次组件更新都执行一遍](#为什么要让副作用函数每次组件更新都执行一遍)
       - [怎么跳过一些不必要的副作用函数](#怎么跳过一些不必要的副作用函数)
+      - [useEffect的优势](#useeffect的优势)
+      - [Capture props](#capture-props)
+        - [如何绕过Capture Value](#如何绕过capture-value)
+      - [不要对 Dependencies 撒谎](#不要对-dependencies-撒谎)
+      - [将function挪到effect里](#将function挪到effect里)
+      - [替代shouldComponentUpdate](#替代shouldcomponentupdate)
+      - [替代componentDidMount](#替代componentdidmount)
+      - [替代componentDidUpdate](#替代componentdidupdate)
+      - [替代forceUpdate](#替代forceupdate)
     - [还有哪些自带的Effect Hooks](#还有哪些自带的effect-hooks)
     - [怎么写自定义的Effect Hooks](#怎么写自定义的effect-hooks)
   - [Hook的执行机制](#hook的执行机制)
@@ -331,6 +340,168 @@ useEffect(() => {
 ```
 
 当我们第二个参数传一个空数组[]时，其实就相当于只在首次渲染的时候执行。也就是componentDidMount加componentWillUnmount的模式。不过这种用法可能带来bug，少用。
+
+#### useEffect的优势
+
+- `useEffect`在渲染结束时执行,所以不会阻塞浏览器渲染进程,所以使用 `Function Component` 写的项目一般都拥有更好的性能.
+- 自然符合 React Fiber 的理念，因为 Fiber 会根据情况暂停或插队执行不同组件的 Render，如果代码遵循了 Capture Value 的特性，在 Fiber 环境下会保证值的安全访问，同时弱化生命周期也能解决中断执行时带来的问题。
+- useEffect 不会在服务端渲染时执行。
+- 由于在 DOM 执行完毕后才执行，所以能保证拿到状态生效后的 DOM 属性。
+
+#### Capture props
+
+对比下面两段代码
+
+**class Component:**
+
+```jsx
+class ProfilePage extends React.Component {
+  render() {
+    setTimeout(() => {
+      // 如果父组件 reRender，this.props 拿到的永远是最新的。
+      // 并不是 props 变了，而是 this.props 指向了新的 props，旧的 props 找不到了
+      console.log(this.props);
+    }, 3000);
+  }
+}
+```
+
+如果希望在 Class Component 捕获瞬时 Props，可以： const props = this.props;，但这样的代码很蹩脚，所以如果希望拿到稳定的 props，使用 Function Component 是更好的选择。
+
+**function Component:**
+
+```jsx
+function ProfilePage(props) {
+  setTimeout(() => {
+    // 就算父组件 reRender，这里拿到的 props 也是初始的
+    console.log(props);
+  }, 3000);
+}
+```
+
+React 文档中描述的 props 不是不可变（Immutable） 数据吗？为啥在运行时还会发生变化呢？
+
+原因在于，虽然 props 不可变，是 this 在 Class Component 中是可变的，因此 this.props 的调用会导致每次都访问最新的 props。
+
+而 Function Component 不存在 this.props 的语法，因此 props 总是不可变的。
+
+##### 如何绕过Capture Value
+
+利用 `useRef` 就可以绕过特性,可以认为 `ref` 在所有Render过程中保持着唯一引用,因此所有对 `ref` 的赋值或取值,拿到的都只有一个最终状态,而不会在每个Render间存在隔离
+
+#### 不要对 Dependencies 撒谎
+
+如果明明使用了某个变量,却没有声明在依赖中,等于向react撒谎,后果就是,当依赖的变量改变时,`useEffect`也不会再次执行:
+
+```jsx
+function Counter() {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setCount(count + 1); // 这里的count永远是初始化的0
+    }, 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  return <h1>{count}</h1>;
+}
+```
+
+由于 useEffect 符合 Capture Value 的特性，拿到的 count 值永远是初始化的 0。相当于 setInterval 永远在 count 为 0 的 Scope 中执行，你后续的 setCount 操作并不会产生任何作用。
+
+#### 将function挪到effect里
+
+> 如果函数定义不在`useEffect`函数体内,可能会遗漏依赖
+
+可以使用useCallback来实现
+
+```jsx
+function Parent() {
+  const [query, setQuery] = useState("react");
+
+  // ✅ Preserves identity until query changes
+  const fetchData = useCallback(() => {
+    const url = "https://hn.algolia.com/api/v1/search?query=" + query;
+    // ... Fetch data and return it ...
+  }, [query]); // ✅ Callback deps are OK
+
+  return <Child fetchData={fetchData} />;
+}
+
+function Child({ fetchData }) {
+  let [data, setData] = useState(null);
+
+  useEffect(() => {
+    fetchData().then(setData);
+  }, [fetchData]); // ✅ Effect deps are OK
+
+  // ...
+}
+```
+
+由于函数也具有 Capture Value 特性，经过 useCallback 包装过的函数可以当作普通变量作为 useEffect 的依赖。useCallback 做的事情，就是在其依赖变化时，返回一个新的函数引用，触发 useEffect 的依赖变化，并激活其重新执行
+
+Function Component 中利用 useCallback 封装的取数函数，可以直接作为依赖传入 useEffect，useEffect 只要关心取数函数是否变化，而取数参数的变化在 useCallback 时关心。
+
+
+#### 替代shouldComponentUpdate
+
+可以是:
+
+```jsx
+function Parent({ a, b }) {
+  // Only re-rendered if `a` changes:
+  const child1 = useMemo(() => <Child1 a={a} />, [a]);
+  // Only re-rendered if `b` changes:
+  const child2 = useMemo(() => <Child2 b={b} />, [b]);
+  return (
+    <>
+      {child1}
+      {child2}
+    </>
+  );
+}
+```
+
+或者通用方法:
+
+```jsx
+const Button = React.memo(props => {
+  // your component
+});
+```
+
+#### 替代componentDidMount
+
+```jsx
+useEffect(() => void fn(),[]);
+```
+
+#### 替代componentDidUpdate
+
+除了初始化第一次不执行,后续每次都执行,所以跳过第一次即可
+
+```jsx
+const mounting = useRef(true);
+useEffect(() => {
+  if (mounting.current) {
+    mounting.current = false;
+  } else {
+    fn();
+  }
+});
+```
+
+#### 替代forceUpdate
+
+```jsx
+const [ignored, forceUpdate] = useReducer(x => x + 1, 0);
+
+function handleClick() {
+  forceUpdate();
+}
+```
 
 ### 还有哪些自带的Effect Hooks
 
